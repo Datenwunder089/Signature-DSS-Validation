@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGN8 Validator - Digitale Signaturen validieren</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="#1E6568"/>
+                    <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="logo-text">SIGN8 <span class="logo-accent">Validator</span></span>
+            </a>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Validator</a>
+                <a href="https://sign8.eu" class="nav-link" target="_blank" rel="noopener">sign8.eu</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-inner">
+            <h1 class="hero-title">Digitale Signaturen <span class="gradient-text">validieren</span></h1>
+            <p class="hero-subtitle">Prüfen Sie die Gültigkeit digitaler Signaturen und Siegel Ihrer PDF-Dokumente - schnell, sicher und zuverlässig.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Upload Card -->
+            <div class="upload-card" id="uploadCard">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M32 8L32 40" stroke="#1E6568" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M22 18L32 8L42 18" stroke="#1E6568" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 40V48C8 52.4183 11.5817 56 16 56H48C52.4183 56 56 52.4183 56 48V40" stroke="#1E6568" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="upload-title">PDF-Dokument hochladen</h2>
+                    <p class="upload-text">Ziehen Sie Ihre Datei hierher oder klicken Sie zum Auswählen</p>
+                    <p class="upload-hint">Unterstütztes Format: PDF (max. 10 MB)</p>
+                    <button class="btn btn-primary" id="selectFileBtn">Datei auswählen</button>
+                    <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden>
+                </div>
+
+                <!-- File Selected State -->
+                <div class="file-selected hidden" id="fileSelected">
+                    <div class="file-info">
+                        <div class="file-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="6" y="2" width="28" height="36" rx="4" stroke="#1E6568" stroke-width="2"/>
+                                <path d="M14 14H26" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M14 20H26" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M14 26H22" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="file-details">
+                            <span class="file-name" id="fileName"></span>
+                            <span class="file-size" id="fileSize"></span>
+                        </div>
+                        <button class="btn-icon" id="removeFile" title="Datei entfernen">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 6L14 14M14 6L6 14" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary btn-validate" id="validateBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 10L8 14L16 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Jetzt validieren
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-card hidden" id="loadingCard">
+                <div class="spinner"></div>
+                <p class="loading-text">Dokument wird validiert...</p>
+                <p class="loading-hint">Signaturen und Siegel werden geprüft</p>
+            </div>
+
+            <!-- Results -->
+            <div class="results-card hidden" id="resultsCard">
+                <div class="results-header">
+                    <h2 class="results-title">Validierungsergebnis</h2>
+                    <button class="btn btn-outline" id="newValidation">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 8C2 4.68629 4.68629 2 8 2C10.2208 2 12.1599 3.26851 13.1973 5.12602" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M14 8C14 11.3137 11.3137 14 8 14C5.77915 14 3.84012 12.7315 2.80269 10.874" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M10 5H13.5V1.5" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6 11H2.5V14.5" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Neue Validierung
+                    </button>
+                </div>
+
+                <!-- Document Info -->
+                <div class="doc-info" id="docInfo">
+                    <div class="doc-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="2" width="22" height="28" rx="3" stroke="#1E6568" stroke-width="2"/>
+                            <path d="M11 10H21" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M11 15H21" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M11 20H17" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="doc-name" id="docName"></span>
+                        <span class="doc-meta" id="docMeta"></span>
+                    </div>
+                </div>
+
+                <!-- Overall Status -->
+                <div class="overall-status" id="overallStatus"></div>
+
+                <!-- Signatures List -->
+                <div class="signatures-list" id="signaturesList"></div>
+
+                <!-- Raw Response Toggle -->
+                <details class="raw-response">
+                    <summary class="raw-toggle">API-Antwort (JSON)</summary>
+                    <pre class="raw-json" id="rawJson"></pre>
+                </details>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-card hidden" id="errorCard">
+                <div class="error-icon">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="24" cy="24" r="20" stroke="#dc3545" stroke-width="3"/>
+                        <path d="M24 14V28" stroke="#dc3545" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="24" cy="34" r="2" fill="#dc3545"/>
+                    </svg>
+                </div>
+                <h3 class="error-title">Validierung fehlgeschlagen</h3>
+                <p class="error-message" id="errorMessage"></p>
+                <button class="btn btn-primary" id="retryBtn">Erneut versuchen</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-gradient"></div>
+            <div class="footer-content">
+                <p class="footer-text">Powered by <a href="https://sign8.eu" target="_blank" rel="noopener">SIGN8</a> &middot; Digitale Signaturen eIDAS-konform</p>
+                <p class="footer-disclaimer">Dokumente werden ausschließlich zur Validierung verarbeitet und nicht gespeichert.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
