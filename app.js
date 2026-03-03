@@ -223,6 +223,9 @@
         // Render overall status
         renderOverallStatus(overall);
 
+        // Check for certificate chain issues and show warning
+        renderChainWarning(signatures, data);
+
         // Render signatures
         renderSignatures(signatures, data);
     }
@@ -324,6 +327,74 @@
                 ${overall.description ? `<div style="font-weight:400;font-size:0.85rem;margin-top:2px;opacity:0.85">${escapeHtml(overall.description)}</div>` : ''}
             </div>
         `;
+    }
+
+    function hasChainIssue(sig) {
+        const fields = [
+            sig.subIndication, sig.subStatus, sig.reason,
+            sig.certificateChainStatus, sig.chainStatus,
+            sig.trustChainStatus, sig.certificatePathStatus
+        ];
+        for (const val of fields) {
+            if (!val) continue;
+            const lower = String(val).toLowerCase();
+            if (lower.includes('no_certificate_chain') ||
+                lower.includes('no_chain') ||
+                lower.includes('chain_constraints_failure') ||
+                lower.includes('unable_to_build_chain') ||
+                lower.includes('certificate_chain_not_found') ||
+                lower.includes('no_trusted') ||
+                lower.includes('not_trusted') ||
+                lower.includes('trust_anchor_not_found')) {
+                return true;
+            }
+        }
+        // Check nested certificate validation
+        const certResult = sig.certificateValidation || sig.certificateChain || sig.x509CertificateValidation;
+        if (certResult) {
+            const certStatus = String(certResult.status || certResult.indication || '').toLowerCase();
+            if (certStatus.includes('failed') || certStatus.includes('invalid') || certStatus.includes('no_chain')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function renderChainWarning(signatures, fullData) {
+        // Remove any existing chain warning
+        const existing = document.getElementById('chainWarning');
+        if (existing) existing.remove();
+
+        // Check all signatures for chain issues
+        const chainIssueFound = signatures.some(sig => hasChainIssue(sig));
+
+        // Also check top-level response fields
+        if (!chainIssueFound) {
+            const topLevel = JSON.stringify(fullData).toLowerCase();
+            if (!topLevel.includes('no_certificate_chain') &&
+                !topLevel.includes('unable_to_build_chain') &&
+                !topLevel.includes('trust_anchor_not_found')) {
+                return;
+            }
+        }
+
+        const warning = document.createElement('div');
+        warning.id = 'chainWarning';
+        warning.className = 'chain-warning';
+        warning.innerHTML = `
+            <svg class="chain-warning-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 22H22L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 10V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="18" r="1" fill="currentColor"/>
+            </svg>
+            <div class="chain-warning-text">
+                <strong>Zertifikat nicht vertrauenswürdig</strong>
+                <span>Das Zertifikat konnte keiner vertrauenswürdigen Stelle zugeordnet werden. Die Echtheit der Signatur kann nicht bestätigt werden.</span>
+            </div>
+        `;
+
+        // Insert after overall status
+        overallStatus.insertAdjacentElement('afterend', warning);
     }
 
     function renderSignatures(signatures, fullData) {
