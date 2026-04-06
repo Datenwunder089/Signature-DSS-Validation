@@ -116,14 +116,24 @@
         const simple = data.SimpleReport || data.simpleReport || data.simpleReportJaxb || data;
         const detailed = data.DetailedReport || data.detailedReport || data.detailedReportJaxb || null;
         const diag = data.DiagnosticData || data.diagnosticData || data.diagnosticDataJaxb || null;
+        console.log('DSS Response keys:', Object.keys(data));
+        console.log('SimpleReport:', simple);
+        console.log('DiagnosticData keys:', diag ? Object.keys(diag) : 'null');
 
         renderOverview(simple, detailed, diag);
     }
 
     function renderOverview(simple, detailed, diag) {
         const policy = simple.validationPolicy || simple.ValidationPolicy || simple.Policy || null;
-        const sigs = simple.signatureOrTimestamp || simple.signatures || simple.Signature || [];
-        const sigArray = Array.isArray(sigs) ? sigs : [sigs];
+        const sigs = simple.signatureOrTimestampOrEvidenceRecord || simple.signatureOrTimestamp || simple.signatures || simple.Signature || [];
+        const rawArray = Array.isArray(sigs) ? sigs : (sigs ? [sigs] : []);
+        // DSS wraps items in {Signature:...} or {Timestamp:...} or {EvidenceRecord:...}
+        const sigArray = rawArray.map(function(item) {
+            if (item && item.Signature) return Object.assign({}, item.Signature, { _type: 'signature' });
+            if (item && item.Timestamp) return Object.assign({}, item.Timestamp, { _type: 'timestamp' });
+            if (item && item.EvidenceRecord) return Object.assign({}, item.EvidenceRecord, { _type: 'evidenceRecord' });
+            return item;
+        }).filter(Boolean);
 
         const totalSigs = simple.signaturesCount ?? simple.SignaturesCount ?? sigArray.length;
         const validSigs = simple.validSignaturesCount ?? simple.ValidSignaturesCount ?? 0;
@@ -152,7 +162,7 @@
         signaturesList.innerHTML = countsHtml + policyHtml;
 
         sigArray.forEach(function(sig, i) {
-            var isTimestamp = !!(sig.productionTime || sig.ProductionTime || sig.TimestampLevel || sig.timestampLevel);
+            var isTimestamp = sig._type === 'timestamp' || !!(sig.productionTime || sig.ProductionTime || sig.TimestampLevel || sig.timestampLevel);
             signaturesList.appendChild(
                 isTimestamp ? renderTimestampCard(sig, i, detailed, diag) : renderSignatureCard(sig, i, detailed, diag)
             );
