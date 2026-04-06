@@ -947,6 +947,54 @@ body {
 .count-valid .count-number { color: var(--color-success); }
 .count-invalid .count-number { color: var(--color-error); }
 
+/* Accordion Sections (Level 3 drill-down) */
+
+.accordion-section {
+    border-top: 1px solid var(--color-border);
+    margin-top: 0.75rem;
+}
+
+.accordion-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    transition: var(--transition);
+}
+
+.accordion-trigger:hover {
+    color: var(--color-primary-light);
+}
+
+.accordion-chevron {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.accordion-trigger.open .accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    display: none;
+    padding-bottom: 0.75rem;
+    animation: accordionFadeIn 0.2s ease;
+}
+
+.accordion-content.open {
+    display: block;
+}
+
+@keyframes accordionFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Timestamp Item */
 
 .timestamp-item {
@@ -1127,5 +1175,14 @@ details[open] .raw-toggle::before {
 
     .signature-header {
         flex-wrap: wrap;
+    }
+
+    .summary-counts {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+    }
+
+    .count-number {
+        font-size: 1.25rem;
     }
 }
