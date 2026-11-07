@@ -4,213 +4,322 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGN8 Validator - Digitale Signaturen validieren</title>
+    <meta name="description" content="Prüfen Sie die Gültigkeit digitaler Signaturen und Siegel Ihrer PDF-Dokumente auf Basis von EU DSS.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600&family=Roboto:wght@400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
 </head>
 <body>
-    <!-- Header -->
+    <a class="skip-link" href="#validator">Zum Validator springen</a>
+
+    <!-- Header (sign8.eu: light grey bar, plain black text links, left + right group, no logo) -->
     <header class="header">
         <div class="header-inner">
-            <div class="logo"></div>
-            <nav class="nav">
-                <a href="#" class="nav-link active">Validator</a>
-                <a href="https://sign8.eu" class="nav-link" target="_blank" rel="noopener">sign8.eu</a>
+            <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="siteNav" aria-label="Menü öffnen">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav" id="siteNav" aria-label="Hauptnavigation">
+                <ul class="nav-group nav-group-main">
+                    <li><a href="#validator" class="nav-link">Validierung</a></li>
+                    <li><a href="docs/documentation.html" class="nav-link">Dokumentation</a></li>
+                </ul>
+                <ul class="nav-group nav-group-meta">
+                    <li><a href="https://sign8.eu" class="nav-link" target="_blank" rel="noopener">sign8.eu</a></li>
+                    <li><a href="https://github.com/Datenwunder089/Signature-DSS-Validation" class="nav-link" target="_blank" rel="noopener">GitHub</a></li>
+                </ul>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-inner">
-            <h1 class="hero-title">Digitale Signaturen <span class="gradient-text">validieren</span></h1>
-            <p class="hero-subtitle">Prüfen Sie die Gültigkeit digitaler Signaturen und Siegel Ihrer PDF-Dokumente - schnell, sicher und zuverlässig.</p>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="main">
-        <div class="container">
-            <!-- Mode Tabs -->
-            <div class="mode-tabs" id="modeTabs">
-                <button class="mode-tab active" data-mode="validate">Signatur-Validierung</button>
-                <button class="mode-tab" data-mode="match">Registrierungs-Abgleich</button>
-            </div>
-
-            <!-- Registration Match Panel -->
-            <div class="match-panel hidden" id="matchPanel">
-                <div class="match-card">
-                    <h3 class="match-title">Registrierungsdaten eingeben</h3>
-                    <p class="match-desc">Geben Sie die Daten aus der Registrierung ein, um diese mit dem qualifizierten Siegel oder der qualifizierten elektronischen Signatur auf dem Dokument abzugleichen.</p>
-                    <div class="match-type-toggle">
-                        <button class="match-type-btn active" data-type="org" id="matchTypeOrg">
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 4V2.5C6 1.67 6.67 1 7.5 1h3c.83 0 1.5.67 1.5 1.5V4" stroke="currentColor" stroke-width="1.5"/><path d="M2 8h14" stroke="currentColor" stroke-width="1.5"/></svg>
-                            Organisation (QESeal)
-                        </button>
-                        <button class="match-type-btn" data-type="person" id="matchTypePerson">
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="5" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 16c0-3.31 3.13-6 7-6s7 2.69 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            Natürliche Person (QES)
-                        </button>
-                    </div>
-                    <div class="match-fields" id="matchFieldsOrg">
-                        <div class="match-field">
-                            <label for="orgName">Organisationsname *</label>
-                            <input type="text" id="orgName" placeholder="z.B. Muster GmbH">
-                        </div>
-                        <div class="match-field">
-                            <label for="orgCountry">Land (ISO-Code)</label>
-                            <input type="text" id="orgCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
-                        </div>
-                        <div class="match-field">
-                            <label for="orgId">Organisations-ID / Registrierungsnummer</label>
-                            <input type="text" id="orgId" placeholder="z.B. HRB 12345 oder VATDE-123456789">
-                        </div>
-                    </div>
-                    <div class="match-fields hidden" id="matchFieldsPerson">
-                        <div class="match-field">
-                            <label for="personGivenName">Vorname *</label>
-                            <input type="text" id="personGivenName" placeholder="z.B. Max">
-                        </div>
-                        <div class="match-field">
-                            <label for="personSurname">Nachname *</label>
-                            <input type="text" id="personSurname" placeholder="z.B. Mustermann">
-                        </div>
-                        <div class="match-field">
-                            <label for="personCountry">Land (ISO-Code)</label>
-                            <input type="text" id="personCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
-                        </div>
-                        <div class="match-field">
-                            <label for="personSerialNumber">Seriennummer / ID</label>
-                            <input type="text" id="personSerialNumber" placeholder="z.B. PNODE-12345678">
-                        </div>
+    <main class="main" id="main">
+        <!-- Hero: copy left, tool right (like the sign8.eu hero composition) -->
+        <section class="hero" aria-labelledby="heroTitle">
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <h1 class="hero-title" id="heroTitle"><span class="gradient-text">Digitale Signaturen validieren</span></h1>
+                    <p class="hero-subline">Schnell, sicher und zuverlässig.</p>
+                    <p class="hero-text">Prüfen Sie die Gültigkeit digitaler Signaturen und Siegel Ihrer PDF-Dokumente.</p>
+                    <p class="hero-text hero-text-secondary">Auf Wunsch gleichen Sie das qualifizierte Siegel oder die qualifizierte elektronische Signatur direkt mit Ihren Registrierungsdaten ab.</p>
+                    <div class="hero-actions">
+                        <a class="btn btn-secondary" href="docs/documentation.html">Dokumentation lesen</a>
+                        <a class="btn btn-secondary" href="https://sign8.eu" target="_blank" rel="noopener">sign8.eu besuchen</a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Upload Card -->
-            <div class="upload-card" id="uploadCard">
-                <div class="upload-zone" id="uploadZone">
-                    <div class="upload-icon">
-                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M32 8L32 40" stroke="#1E6568" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M22 18L32 8L42 18" stroke="#1E6568" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8 40V48C8 52.4183 11.5817 56 16 56H48C52.4183 56 56 52.4183 56 48V40" stroke="#1E6568" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                <div class="tool" id="validator">
+                    <!-- Mode Tabs -->
+                    <div class="mode-tabs" id="modeTabs" role="group" aria-label="Prüfmodus">
+                        <button class="mode-tab active" data-mode="validate" type="button" aria-pressed="true">Signatur-Validierung</button>
+                        <button class="mode-tab" data-mode="match" type="button" aria-pressed="false">Registrierungs-Abgleich</button>
                     </div>
-                    <h2 class="upload-title">PDF-Dokument hochladen</h2>
-                    <p class="upload-text">Ziehen Sie Ihre Datei hierher oder klicken Sie zum Auswählen</p>
-                    <p class="upload-hint">Unterstütztes Format: PDF (max. 10 MB)</p>
-                    <button class="btn btn-primary" id="selectFileBtn">Datei auswählen</button>
-                    <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden>
-                </div>
 
-                <!-- File Selected State -->
-                <div class="file-selected hidden" id="fileSelected">
-                    <div class="file-info">
-                        <div class="file-icon">
-                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="6" y="2" width="28" height="36" rx="4" stroke="#1E6568" stroke-width="2"/>
-                                <path d="M14 14H26" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M14 20H26" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M14 26H22" stroke="#1E6568" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Registration Match Panel -->
+                    <div class="match-panel hidden" id="matchPanel">
+                        <div class="match-card">
+                            <h2 class="match-title">Registrierungsdaten eingeben</h2>
+                            <p class="match-desc">Geben Sie die Daten aus der Registrierung ein, um diese mit dem qualifizierten Siegel oder der qualifizierten elektronischen Signatur auf dem Dokument abzugleichen.</p>
+                            <div class="match-type-toggle" role="group" aria-label="Art der Registrierung">
+                                <button class="match-type-btn active" data-type="org" id="matchTypeOrg" type="button" aria-pressed="true">
+                                    <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="4" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M6 4V2.5C6 1.67 6.67 1 7.5 1h3c.83 0 1.5.67 1.5 1.5V4" stroke="currentColor" stroke-width="1.6"/><path d="M2 8h14" stroke="currentColor" stroke-width="1.6"/></svg>
+                                    Organisation (QESeal)
+                                </button>
+                                <button class="match-type-btn" data-type="person" id="matchTypePerson" type="button" aria-pressed="false">
+                                    <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="5" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M2 16c0-3.31 3.13-6 7-6s7 2.69 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                                    Natürliche Person (QES)
+                                </button>
+                            </div>
+                            <div class="match-fields match-fields-org" id="matchFieldsOrg">
+                                <div class="match-field match-field-wide">
+                                    <label for="orgName">Organisationsname *</label>
+                                    <input type="text" id="orgName" placeholder="z.B. Muster GmbH" autocomplete="organization">
+                                </div>
+                                <div class="match-field">
+                                    <label for="orgCountry">Land (ISO-Code)</label>
+                                    <input type="text" id="orgCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
+                                </div>
+                                <div class="match-field">
+                                    <label for="orgId">Organisations-ID / Registrierungsnummer</label>
+                                    <input type="text" id="orgId" aria-describedby="orgIdHint">
+                                    <p class="match-hint" id="orgIdHint">z.B. HRB 12345 oder VATDE-123456789</p>
+                                </div>
+                            </div>
+                            <div class="match-fields hidden" id="matchFieldsPerson">
+                                <div class="match-field">
+                                    <label for="personGivenName">Vorname *</label>
+                                    <input type="text" id="personGivenName" placeholder="z.B. Max" autocomplete="given-name">
+                                </div>
+                                <div class="match-field">
+                                    <label for="personSurname">Nachname *</label>
+                                    <input type="text" id="personSurname" placeholder="z.B. Mustermann" autocomplete="family-name">
+                                </div>
+                                <div class="match-field">
+                                    <label for="personCountry">Land (ISO-Code)</label>
+                                    <input type="text" id="personCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
+                                </div>
+                                <div class="match-field">
+                                    <label for="personSerialNumber">Seriennummer / ID</label>
+                                    <input type="text" id="personSerialNumber" placeholder="z.B. PNODE-12345678">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Card -->
+                    <div class="upload-card" id="uploadCard">
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon" aria-hidden="true">
+                                <svg width="76" height="76" viewBox="0 0 76 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M44 6H12v60h28" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+                                    <path d="M44 6l16 16v16" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+                                    <path d="M44 6v16h16" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+                                    <path d="M21 30h16M21 39h24M21 48h12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                                    <circle cx="56" cy="56" r="16" fill="currentColor"/>
+                                    <path d="M56 64V48M49.5 54.5L56 48l6.5 6.5" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h2 class="upload-title">PDF-Dokument hochladen</h2>
+                            <p class="upload-text">Ziehen Sie Ihre Datei hierher oder klicken Sie zum Auswählen</p>
+                            <p class="upload-hint">Unterstütztes Format: PDF (max. 10 MB)</p>
+                            <button class="btn btn-primary" id="selectFileBtn" type="button">Datei auswählen</button>
+                            <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden>
+                        </div>
+
+                        <!-- File Selected State -->
+                        <div class="file-selected hidden" id="fileSelected">
+                            <div class="file-info">
+                                <div class="file-icon" aria-hidden="true">
+                                    <svg width="36" height="40" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M22 2H4v36h28V12z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                                        <path d="M22 2v10h10" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                                        <path d="M10 20h16M10 26h16M10 32h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <div class="file-details">
+                                    <span class="file-name" id="fileName"></span>
+                                    <span class="file-size" id="fileSize"></span>
+                                </div>
+                                <button class="btn-icon" id="removeFile" type="button" title="Datei entfernen" aria-label="Datei entfernen">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary btn-validate" id="validateBtn" type="button">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Jetzt validieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="loading-card hidden" id="loadingCard" role="status" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <p class="loading-text">Dokument wird validiert...</p>
+                        <p class="loading-hint">Signaturen und Siegel werden geprüft</p>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="results-card hidden" id="resultsCard">
+                        <div class="results-header">
+                            <h2 class="results-title" tabindex="-1">Validierungsergebnis</h2>
+                            <button class="btn btn-secondary btn-outline" id="newValidation" type="button">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M2 8C2 4.68629 4.68629 2 8 2C10.2208 2 12.1599 3.26851 13.1973 5.12602" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M14 8C14 11.3137 11.3137 14 8 14C5.77915 14 3.84012 12.7315 2.80269 10.874" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M10 5H13.5V1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M6 11H2.5V14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Neue Validierung
+                            </button>
+                        </div>
+
+                        <!-- Document Info -->
+                        <div class="doc-info" id="docInfo">
+                            <div class="doc-icon" aria-hidden="true">
+                                <svg width="30" height="34" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 2H4v36h28V12z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                                    <path d="M22 2v10h10" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                                    <path d="M10 20h16M10 26h16M10 32h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="doc-text">
+                                <span class="doc-name" id="docName"></span>
+                                <span class="doc-meta" id="docMeta"></span>
+                            </div>
+                        </div>
+
+                        <!-- Overall Status -->
+                        <div class="overall-status" id="overallStatus"></div>
+
+                        <!-- Signatures List -->
+                        <div class="signatures-list" id="signaturesList"></div>
+
+                        <!-- Raw Response Toggle -->
+                        <details class="raw-response">
+                            <summary class="raw-toggle">API-Antwort (JSON)</summary>
+                            <pre class="raw-json" id="rawJson"></pre>
+                        </details>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="error-card hidden" id="errorCard" role="alert">
+                        <div class="error-icon" aria-hidden="true">
+                            <svg width="56" height="56" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="3"/>
+                                <path d="M24 14V28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="24" cy="34" r="2" fill="currentColor"/>
                             </svg>
                         </div>
-                        <div class="file-details">
-                            <span class="file-name" id="fileName"></span>
-                            <span class="file-size" id="fileSize"></span>
-                        </div>
-                        <button class="btn-icon" id="removeFile" title="Datei entfernen">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M6 6L14 14M14 6L6 14" stroke="#666" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <button class="btn btn-primary btn-validate" id="validateBtn">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4 10L8 14L16 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Jetzt validieren
-                    </button>
-                </div>
-            </div>
-
-            <!-- Loading State -->
-            <div class="loading-card hidden" id="loadingCard">
-                <div class="spinner"></div>
-                <p class="loading-text">Dokument wird validiert...</p>
-                <p class="loading-hint">Signaturen und Siegel werden geprüft</p>
-            </div>
-
-            <!-- Results -->
-            <div class="results-card hidden" id="resultsCard">
-                <div class="results-header">
-                    <h2 class="results-title">Validierungsergebnis</h2>
-                    <button class="btn btn-outline" id="newValidation">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2 8C2 4.68629 4.68629 2 8 2C10.2208 2 12.1599 3.26851 13.1973 5.12602" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M14 8C14 11.3137 11.3137 14 8 14C5.77915 14 3.84012 12.7315 2.80269 10.874" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M10 5H13.5V1.5" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M6 11H2.5V14.5" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Neue Validierung
-                    </button>
-                </div>
-
-                <!-- Document Info -->
-                <div class="doc-info" id="docInfo">
-                    <div class="doc-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="5" y="2" width="22" height="28" rx="3" stroke="#1E6568" stroke-width="2"/>
-                            <path d="M11 10H21" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M11 15H21" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M11 20H17" stroke="#1E6568" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="doc-name" id="docName"></span>
-                        <span class="doc-meta" id="docMeta"></span>
+                        <h2 class="error-title">Validierung fehlgeschlagen</h2>
+                        <p class="error-message" id="errorMessage"></p>
+                        <button class="btn btn-primary" id="retryBtn" type="button">Erneut versuchen</button>
                     </div>
                 </div>
-
-                <!-- Overall Status -->
-                <div class="overall-status" id="overallStatus"></div>
-
-                <!-- Signatures List -->
-                <div class="signatures-list" id="signaturesList"></div>
-
-                <!-- Raw Response Toggle -->
-                <details class="raw-response">
-                    <summary class="raw-toggle">API-Antwort (JSON)</summary>
-                    <pre class="raw-json" id="rawJson"></pre>
-                </details>
             </div>
+        </section>
 
-            <!-- Error State -->
-            <div class="error-card hidden" id="errorCard">
-                <div class="error-icon">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="24" cy="24" r="20" stroke="#dc3545" stroke-width="3"/>
-                        <path d="M24 14V28" stroke="#dc3545" stroke-width="3" stroke-linecap="round"/>
-                        <circle cx="24" cy="34" r="2" fill="#dc3545"/>
-                    </svg>
+        <!-- Pictogram row (sign8.eu: centered H2, black line icons, H3 + short copy) -->
+        <section class="features" aria-labelledby="featuresTitle">
+            <div class="container">
+                <h2 class="section-title" id="featuresTitle">Was Sie im Ergebnis sehen</h2>
+                <ul class="feature-grid">
+                    <li class="feature">
+                        <svg class="feature-icon" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+                            <path d="M56 10H18v76h36" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M56 10l18 18v22" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M56 10v18h18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M28 34h18M28 45h30" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M28 66c3-9 7-10 8-4 1 5 3 6 6 0 2-4 4-4 5 1" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="72" cy="70" r="17" fill="currentColor"/>
+                            <path d="M64 70l6 6 10-11" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3 class="feature-title">Signaturen &amp; Siegel</h3>
+                        <p class="feature-text">Status, Format, Level und Zeitpunkt jeder Signatur und jedes Siegels – inklusive der enthaltenen Zeitstempel.</p>
+                    </li>
+                    <li class="feature">
+                        <svg class="feature-icon" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+                            <rect x="10" y="40" width="40" height="34" rx="3" fill="currentColor"/>
+                            <path d="M18 40V30a12 12 0 0 1 24 0v10" stroke="currentColor" stroke-width="5"/>
+                            <circle cx="30" cy="55" r="4.5" fill="#fff"/>
+                            <path d="M30 58v7" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M64 30l22 8v16c0 14-9 24-22 30-13-6-22-16-22-30V38z" fill="#fff" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M54 56l7 7 13-14" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3 class="feature-title">Zertifikatskette</h3>
+                        <p class="feature-text">Alle Zertifikate bis zum Vertrauensanker. Nicht vertrauenswürdige Zertifikate werden deutlich markiert.</p>
+                    </li>
+                    <li class="feature">
+                        <svg class="feature-icon" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+                            <rect x="12" y="14" width="56" height="68" rx="2" stroke="currentColor" stroke-width="4"/>
+                            <path d="M24 30h32M24 41h32M24 52h16" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="62" cy="62" r="15" fill="#fff" stroke="currentColor" stroke-width="4"/>
+                            <path d="M73 73l12 12" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M55 62l5 5 9-10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3 class="feature-title">Prüfdetails</h3>
+                        <p class="feature-text">Validierungs- und Qualifizierungsdetails nach EU DSS sowie die vollständige API-Antwort als JSON.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Gradient band (sign8.eu: teal → lime, white text, accent pill) -->
+        <section class="band" aria-labelledby="bandTitle">
+            <div class="container">
+                <div class="band-content">
+                    <h2 class="band-title" id="bandTitle">Zwei Prüfungen. Ein Werkzeug.</h2>
+                    <p class="band-lead">Dokumente werden ausschließlich zur Validierung verarbeitet und nicht gespeichert.</p>
+                    <p class="band-text"><strong>Signatur-Validierung:</strong> prüft alle Signaturen, Siegel und Zeitstempel eines PDF-Dokuments auf Basis von EU DSS.</p>
+                    <p class="band-text"><strong>Registrierungs-Abgleich:</strong> vergleicht Ihre Registrierungsdaten mit dem qualifizierten Siegel (QESeal) oder der qualifizierten elektronischen Signatur (QES) im Dokument.</p>
+                    <a class="btn btn-accent" href="docs/SIGN8-Signature-DSS-Validation-Dokumentation.pdf" target="_blank" rel="noopener">Handbuch als PDF</a>
                 </div>
-                <h3 class="error-title">Validierung fehlgeschlagen</h3>
-                <p class="error-message" id="errorMessage"></p>
-                <button class="btn btn-primary" id="retryBtn">Erneut versuchen</button>
             </div>
-        </div>
+        </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer (sign8.eu: dark, big white headline, link columns, copyright bar) -->
     <footer class="footer">
-        <div class="footer-inner">
-            <div class="footer-gradient"></div>
-            <div class="footer-content">
-                <p class="footer-text">Powered by <a href="https://sign8.eu" target="_blank" rel="noopener">SIGN8</a> &middot; Digitale Signaturen eIDAS-konform</p>
-                <p class="footer-disclaimer">Dokumente werden ausschließlich zur Validierung verarbeitet und nicht gespeichert.</p>
-                <p class="footer-disclaimer" style="margin-top:0.25rem">Validierung basiert auf <a href="https://github.com/esig/dss" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6)">EU DSS</a> (LGPL-2.1) &middot; <a href="https://github.com/Datenwunder089/Signature-DSS-Validation" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6)">Open Source (MIT)</a></p>
+        <div class="footer-main">
+            <div class="container">
+                <p class="footer-headline">Digitale Signaturen und Siegel zuverlässig validieren.</p>
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h2 class="footer-col-title">Validator</h2>
+                        <ul class="footer-links">
+                            <li><a href="#validator" data-mode-link="validate">Signatur-Validierung</a></li>
+                            <li><a href="#validator" data-mode-link="match">Registrierungs-Abgleich</a></li>
+                            <li><a href="docs/documentation.html">Dokumentation</a></li>
+                            <li><a href="docs/SIGN8-Signature-DSS-Validation-Dokumentation.pdf" target="_blank" rel="noopener">Handbuch (PDF)</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h2 class="footer-col-title">Open Source</h2>
+                        <ul class="footer-links">
+                            <li><a href="https://github.com/Datenwunder089/Signature-DSS-Validation" target="_blank" rel="noopener">Quellcode auf GitHub</a></li>
+                            <li><a href="https://github.com/esig/dss" target="_blank" rel="noopener">EU DSS auf GitHub</a></li>
+                        </ul>
+                        <p class="footer-attribution">Validierung basiert auf <a href="https://github.com/esig/dss" target="_blank" rel="noopener">EU DSS</a> (LGPL-2.1) &middot; <a href="https://github.com/Datenwunder089/Signature-DSS-Validation" target="_blank" rel="noopener">Open Source (MIT)</a></p>
+                    </div>
+                    <div class="footer-col">
+                        <h2 class="footer-col-title">SIGN8</h2>
+                        <ul class="footer-links">
+                            <li><a href="https://sign8.eu" target="_blank" rel="noopener">sign8.eu</a></li>
+                        </ul>
+                        <p class="footer-note">Dokumente werden ausschließlich zur Validierung verarbeitet und nicht gespeichert.</p>
+                    </div>
+                </div>
+                <a class="btn btn-primary footer-cta" href="https://sign8.eu" target="_blank" rel="noopener">sign8.eu besuchen</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="footer-copy">Powered by <a href="https://sign8.eu" target="_blank" rel="noopener">SIGN8</a> &middot; Digitale Signaturen eIDAS-konform</p>
             </div>
         </div>
     </footer>

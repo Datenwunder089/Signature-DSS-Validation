@@ -99,6 +99,7 @@
     function resetUpload() {
         selectedFile = null; fileInput.value = '';
         uploadZone.classList.remove('hidden'); fileSelected.classList.add('hidden');
+        selectFileBtn.focus();
     }
 
     // ── Validation ───────────────────────────────────────────
@@ -154,6 +155,10 @@
         if (matchMode) {
             renderMatchResult(simple, diag);
         }
+
+        // the focused "Jetzt validieren" button is gone – move focus to the result heading
+        var title = resultsCard.querySelector('.results-title');
+        if (title) title.focus();
     }
 
     function renderOverview(simple, detailed, diag) {
@@ -222,8 +227,8 @@
     function renderOverallBanner(o) {
         overallStatus.className = 'overall-status status-' + o.status;
         overallStatus.innerHTML = ICONS[o.status] +
-            '<div><strong>' + esc(o.label) + '</strong>' +
-            (o.desc ? '<div style="font-weight:400;font-size:0.85rem;margin-top:2px;opacity:0.85">' + esc(o.desc) + '</div>' : '') + '</div>';
+            '<div class="status-body"><strong class="status-label">' + esc(o.label) + '</strong>' +
+            (o.desc ? '<div class="status-desc">' + esc(o.desc) + '</div>' : '') + '</div>';
     }
 
     // ── Signature Card (Level 1 → 2 → 3) ────────────────────
@@ -248,16 +253,16 @@
 
         var card = el('div', 'signature-item');
         card.innerHTML =
-            '<div class="signature-header" data-toggle="sig-detail-' + index + '">' +
+            '<div class="signature-header" data-toggle="sig-detail-' + index + '" role="button" tabindex="0" aria-expanded="false" aria-controls="sig-detail-' + index + '">' +
                 '<div class="sig-status-badge ' + status + '">' + statusLabel(status) + '</div>' +
                 '<div class="sig-info">' +
                     '<span class="sig-name">' + esc(signedBy) + '</span>' +
                     '<span class="sig-meta">' + (sigFormat ? esc(sigFormat) : '') + (signingTime ? ' &middot; ' + esc(fmtDate(signingTime)) : '') + '</span>' +
                 '</div>' +
-                '<svg class="sig-expand" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+                '<svg class="sig-expand" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
             '</div>' +
             '<div class="signature-details" id="sig-detail-' + index + '">' +
-                '<div class="detail-grid" style="padding-top:1rem">' +
+                '<div class="detail-grid">' +
                     '<div class="detail-item"><span class="detail-label">Status</span><span class="detail-value dss-indication ' + status + '">' + esc(indication) + '</span></div>' +
                     (subIndication ? '<div class="detail-item"><span class="detail-label">Sub-Indication</span><span class="detail-value">' + esc(subIndication) + '</span></div>' : '') +
                     '<div class="detail-item"><span class="detail-label">Unterzeichner</span><span class="detail-value">' + esc(signedBy) + '</span></div>' +
@@ -265,7 +270,7 @@
                     (sigLevelStr ? '<div class="detail-item"><span class="detail-label">Signaturlevel</span><span class="detail-value">' + esc(sigLevelStr) + '</span></div>' : '') +
                     (signingTime ? '<div class="detail-item"><span class="detail-label">Signaturzeitpunkt</span><span class="detail-value">' + esc(fmtDate(signingTime)) + '</span></div>' : '') +
                     (bestSigTime ? '<div class="detail-item"><span class="detail-label">Bester Signaturzeitpunkt</span><span class="detail-value">' + esc(fmtDate(bestSigTime)) + '</span></div>' : '') +
-                    (sigId ? '<div class="detail-item full-width"><span class="detail-label">Signatur-ID</span><span class="detail-value" style="font-size:0.75rem;font-family:monospace;opacity:0.7">' + esc(sigId) + '</span></div>' : '') +
+                    (sigId ? '<div class="detail-item full-width"><span class="detail-label">Signatur-ID</span><span class="detail-value detail-mono detail-muted">' + esc(sigId) + '</span></div>' : '') +
                 '</div>' +
                 renderAccordionSection('Validierungs-Details', renderValidationMessages(adesDetails), index + '-ades') +
                 renderAccordionSection('Qualifizierungs-Details', renderValidationMessages(qualDetails), index + '-qual') +
@@ -279,6 +284,7 @@
             var det = card.querySelector('.signature-details');
             det.classList.toggle('open');
             card.querySelector('.sig-expand').classList.toggle('expanded');
+            this.setAttribute('aria-expanded', String(det.classList.contains('open')));
         });
 
         card.querySelectorAll('.accordion-trigger').forEach(function(trigger) {
@@ -286,6 +292,7 @@
                 e.stopPropagation();
                 var target = card.querySelector('#' + trigger.dataset.target);
                 if (target) { target.classList.toggle('open'); trigger.classList.toggle('open'); }
+                trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
             });
         });
 
@@ -305,16 +312,16 @@
 
         var card = el('div', 'signature-item timestamp-item');
         card.innerHTML =
-            '<div class="signature-header">' +
+            '<div class="signature-header" role="button" tabindex="0" aria-expanded="false">' +
                 '<div class="sig-status-badge ' + status + '">' + statusLabel(status) + '</div>' +
                 '<div class="sig-info">' +
                     '<span class="sig-name">' + esc(producedBy) + '</span>' +
                     '<span class="sig-meta">Zeitstempel' + (productionTime ? ' &middot; ' + esc(fmtDate(productionTime)) : '') + '</span>' +
                 '</div>' +
-                '<svg class="sig-expand" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+                '<svg class="sig-expand" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
             '</div>' +
             '<div class="signature-details">' +
-                '<div class="detail-grid" style="padding-top:1rem">' +
+                '<div class="detail-grid">' +
                     '<div class="detail-item"><span class="detail-label">Status</span><span class="detail-value dss-indication ' + status + '">' + esc(indication) + '</span></div>' +
                     (subIndication ? '<div class="detail-item"><span class="detail-label">Sub-Indication</span><span class="detail-value">' + esc(subIndication) + '</span></div>' : '') +
                     (productionTime ? '<div class="detail-item"><span class="detail-label">Erzeugungszeitpunkt</span><span class="detail-value">' + esc(fmtDate(productionTime)) + '</span></div>' : '') +
@@ -327,12 +334,14 @@
         card.querySelector('.signature-header').addEventListener('click', function() {
             card.querySelector('.signature-details').classList.toggle('open');
             card.querySelector('.sig-expand').classList.toggle('expanded');
+            this.setAttribute('aria-expanded', String(card.querySelector('.signature-details').classList.contains('open')));
         });
         card.querySelectorAll('.accordion-trigger').forEach(function(trigger) {
             trigger.addEventListener('click', function(e) {
                 e.stopPropagation();
                 var target = card.querySelector('#' + trigger.dataset.target);
                 if (target) { target.classList.toggle('open'); trigger.classList.toggle('open'); }
+                trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
             });
         });
 
@@ -344,8 +353,8 @@
     function renderAccordionSection(title, content, id) {
         if (!content) return '';
         return '<div class="accordion-section">' +
-            '<div class="accordion-trigger" data-target="acc-' + id + '">' +
-                '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5L7 8L10 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<div class="accordion-trigger" data-target="acc-' + id + '" role="button" tabindex="0" aria-expanded="false" aria-controls="acc-' + id + '">' +
+                '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 5L7 8L10 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
                 '<span>' + esc(title) + '</span>' +
             '</div>' +
             '<div class="accordion-content" id="acc-' + id + '">' + content + '</div></div>';
@@ -398,7 +407,7 @@
                     '<span class="cert-name">' + esc(name) + '</span>' +
                     '<span class="trust-badge ' + (trusted ? 'trusted' : 'untrusted') + '">' + (trusted ? 'Vertrauenswürdig' : 'Nicht vertrauenswürdig') + '</span>' +
                 '</div>' +
-                (sunsetDate ? '<div style="padding-left:30px;font-size:0.75rem;color:var(--color-text-light)">Sunset: ' + esc(fmtDate(sunsetDate)) + '</div>' : '') +
+                (sunsetDate ? '<div class="cert-sub">Sunset: ' + esc(fmtDate(sunsetDate)) + '</div>' : '') +
                 (anchorArray.length ? renderTrustAnchors(anchorArray) : '') +
             '</div>';
         });
@@ -453,12 +462,12 @@
             var producedBy = ts.ProducedBy || ts.producedBy || 'Zeitstempel ' + (i + 1);
             var tsLevel = ts.TimestampLevel || ts.timestampLevel || '';
 
-            html += '<div class="cert-item" style="border-left:3px solid var(--color-info)">' +
+            html += '<div class="cert-item ts-nested">' +
                 '<div class="cert-header">' +
-                    '<span class="sig-status-badge ' + status + '" style="font-size:0.65rem">' + statusLabel(status) + '</span>' +
+                    '<span class="sig-status-badge sig-status-badge-sm ' + status + '">' + statusLabel(status) + '</span>' +
                     '<span class="cert-name">' + esc(producedBy) + '</span>' +
                 '</div>' +
-                '<div style="padding-left:8px;font-size:0.8rem;color:var(--color-text-secondary)">' +
+                '<div class="ts-nested-meta">' +
                     (indication ? 'Status: <strong>' + esc(indication) + '</strong>' : '') +
                     (productionTime ? ' &middot; ' + esc(fmtDate(productionTime)) : '') +
                     (tsLevel ? ' &middot; Level: ' + esc(typeof tsLevel === 'object' ? (tsLevel.value || '') : tsLevel) : '') +
@@ -509,10 +518,10 @@
                     '<span class="cert-index">' + (i + 1) + '</span>' +
                     '<span class="cert-name">' + esc(chainCert.QualifiedName || chainCert.qualifiedName || certId) + '</span>' +
                 '</div>' +
-                '<div class="detail-grid" style="padding:0.5rem 0 0 30px;gap:0.5rem">' +
-                    (subjectStr ? '<div class="detail-item full-width"><span class="detail-label">Subject</span><span class="detail-value" style="font-size:0.8rem">' + esc(subjectStr) + '</span></div>' : '') +
-                    (issuerStr ? '<div class="detail-item full-width"><span class="detail-label">Issuer</span><span class="detail-value" style="font-size:0.8rem">' + esc(issuerStr) + '</span></div>' : '') +
-                    (serial ? '<div class="detail-item"><span class="detail-label">Seriennummer</span><span class="detail-value" style="font-size:0.75rem;font-family:monospace">' + esc(String(serial)) + '</span></div>' : '') +
+                '<div class="detail-grid cert-detail-grid">' +
+                    (subjectStr ? '<div class="detail-item full-width"><span class="detail-label">Subject</span><span class="detail-value detail-small">' + esc(subjectStr) + '</span></div>' : '') +
+                    (issuerStr ? '<div class="detail-item full-width"><span class="detail-label">Issuer</span><span class="detail-value detail-small">' + esc(issuerStr) + '</span></div>' : '') +
+                    (serial ? '<div class="detail-item"><span class="detail-label">Seriennummer</span><span class="detail-value detail-mono">' + esc(String(serial)) + '</span></div>' : '') +
                     (source ? '<div class="detail-item"><span class="detail-label">Quelle</span><span class="detail-value">' + esc(source) + '</span></div>' : '') +
                     (notBefore ? '<div class="detail-item"><span class="detail-label">Gültig ab</span><span class="detail-value">' + esc(fmtDate(notBefore)) + '</span></div>' : '') +
                     (notAfter ? '<div class="detail-item"><span class="detail-label">Gültig bis</span><span class="detail-value">' + esc(fmtDate(notAfter)) + '</span></div>' : '') +
@@ -716,7 +725,7 @@
             noSigDiv.id = 'matchResultContainer';
             noSigDiv.innerHTML = '<div class="match-result-header">' + ICONS.invalid +
                 '<strong>Keine Signaturen zum Abgleich gefunden</strong></div>' +
-                '<p style="font-size:0.85rem;color:var(--color-text-secondary)">Das Dokument enthält keine qualifizierten Signaturen oder Siegel, die mit den Registrierungsdaten verglichen werden können.</p>';
+                '<p class="match-result-text">Das Dokument enthält keine qualifizierten Signaturen oder Siegel, die mit den Registrierungsdaten verglichen werden können.</p>';
             signaturesList.insertAdjacentElement('beforebegin', noSigDiv);
             return;
         }
@@ -732,20 +741,21 @@
             var div = el('div', 'match-result match-' + result.overall);
             div.innerHTML = '<div class="match-result-header">' + icons[result.overall] +
                 '<strong>' + esc(labels[result.overall]) + (signers.length > 1 ? ' (' + esc(signer.signedBy) + ')' : '') + '</strong></div>' +
-                '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin-bottom:0.5rem">' +
+                '<p class="match-result-text">' +
                     result.okCount + ' von ' + result.totalChecked + ' geprüften Feldern stimmen überein.' +
-                    (signer.dn._raw ? '<br><span style="font-size:0.75rem;opacity:0.7">Zertifikats-Subject: ' + esc(signer.dn._raw) + '</span>' : '') +
+                    (signer.dn._raw ? '<span class="match-subject">Zertifikats-Subject: ' + esc(signer.dn._raw) + '</span>' : '') +
                 '</p>' +
-                '<div class="match-detail-rows">' +
-                    '<div class="match-row" style="font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-light)">' +
-                        '<span>Feld</span><span>Erwartet</span><span>Gefunden</span><span>Status</span></div>' +
+                '<div class="match-detail-rows" role="table" aria-label="Abgleich im Detail">' +
+                    '<div class="match-row match-row-head" role="row">' +
+                        '<span role="columnheader">Feld</span><span role="columnheader">Erwartet</span>' +
+                        '<span role="columnheader">Gefunden</span><span role="columnheader">Status</span></div>' +
                     result.rows.map(function(r) {
                         var statusText = { ok: 'OK', fail: 'Fehlt', skip: 'n/a' }[r.status];
-                        return '<div class="match-row">' +
-                            '<span class="match-row-label">' + esc(r.label) + '</span>' +
-                            '<span class="match-row-expected">' + esc(r.expected || '-') + '</span>' +
-                            '<span class="match-row-found">' + esc(r.found || '-') + '</span>' +
-                            '<span class="match-row-status ' + r.status + '">' + statusText + '</span></div>';
+                        return '<div class="match-row" role="row">' +
+                            '<span class="match-row-label" role="rowheader">' + esc(r.label) + '</span>' +
+                            '<span class="match-row-expected" role="cell">' + esc(r.expected || '-') + '</span>' +
+                            '<span class="match-row-found" role="cell">' + esc(r.found || '-') + '</span>' +
+                            '<span class="match-row-status ' + r.status + '" role="cell">' + statusText + '</span></div>';
                     }).join('') +
                 '</div>';
 
@@ -760,6 +770,7 @@
     function showError(message) {
         hide(loadingCard, uploadCard, resultsCard); show(errorCard);
         errorMessage.textContent = message;
+        retryBtn.focus(); // the button that had focus is now hidden
     }
 
     retryBtn.addEventListener('click', resetToUpload);
@@ -771,6 +782,7 @@
         hide(errorCard, resultsCard, loadingCard); show(uploadCard);
         var mc = document.getElementById('matchResultContainer');
         if (mc) mc.remove();
+        selectFileBtn.focus();
     }
 
     // ── Helpers ──────────────────────────────────────────────
@@ -820,5 +832,70 @@
 
     function show(el) { el.classList.remove('hidden'); }
     function hide() { for (var i = 0; i < arguments.length; i++) arguments[i].classList.add('hidden'); }
+
+    // ── UI chrome: keyboard access, mode state, header navigation ──
+
+    // Enter / Space opens signature cards and accordions (they are role="button" divs)
+    signaturesList.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target;
+        if (t.classList && (t.classList.contains('signature-header') || t.classList.contains('accordion-trigger'))) {
+            e.preventDefault();
+            t.click();
+        }
+    });
+
+    function syncModeUi() {
+        modeTabs.querySelectorAll('.mode-tab').forEach(function(t) {
+            t.setAttribute('aria-pressed', String(t.classList.contains('active')));
+        });
+    }
+    modeTabs.addEventListener('click', syncModeUi);
+
+    function syncMatchTypeUi() {
+        matchTypeOrg.setAttribute('aria-pressed', String(matchTypeOrg.classList.contains('active')));
+        matchTypePerson.setAttribute('aria-pressed', String(matchTypePerson.classList.contains('active')));
+    }
+    matchTypeOrg.addEventListener('click', syncMatchTypeUi);
+    matchTypePerson.addEventListener('click', syncMatchTypeUi);
+
+    var navToggle = document.getElementById('navToggle');
+    var siteNav = document.getElementById('siteNav');
+
+    function setNavOpen(open) {
+        if (!navToggle || !siteNav) return;
+        navToggle.setAttribute('aria-expanded', String(open));
+        navToggle.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+        siteNav.classList.toggle('open', open);
+    }
+
+    if (navToggle && siteNav) {
+        navToggle.addEventListener('click', function() {
+            setNavOpen(navToggle.getAttribute('aria-expanded') !== 'true');
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') {
+                setNavOpen(false);
+                navToggle.focus();
+            }
+        });
+        siteNav.querySelectorAll('a').forEach(function(a) {
+            a.addEventListener('click', function() { setNavOpen(false); });
+        });
+    }
+
+    // Header / footer links that switch the validator mode
+    document.querySelectorAll('[data-mode-link]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            var tab = modeTabs.querySelector('.mode-tab[data-mode="' + link.dataset.modeLink + '"]');
+            if (!tab) return;
+            e.preventDefault();
+            if (!tab.classList.contains('active')) tab.click();
+            var tool = document.getElementById('validator');
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (tool) tool.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            tab.focus({ preventScroll: true });
+        });
+    });
 
 })();
