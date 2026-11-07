@@ -33,6 +33,62 @@
     <!-- Main Content -->
     <main class="main">
         <div class="container">
+            <!-- Mode Tabs -->
+            <div class="mode-tabs" id="modeTabs">
+                <button class="mode-tab active" data-mode="validate">Signatur-Validierung</button>
+                <button class="mode-tab" data-mode="match">Registrierungs-Abgleich</button>
+            </div>
+
+            <!-- Registration Match Panel -->
+            <div class="match-panel hidden" id="matchPanel">
+                <div class="match-card">
+                    <h3 class="match-title">Registrierungsdaten eingeben</h3>
+                    <p class="match-desc">Geben Sie die Daten aus der Registrierung ein, um diese mit dem qualifizierten Siegel oder der qualifizierten elektronischen Signatur auf dem Dokument abzugleichen.</p>
+                    <div class="match-type-toggle">
+                        <button class="match-type-btn active" data-type="org" id="matchTypeOrg">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 4V2.5C6 1.67 6.67 1 7.5 1h3c.83 0 1.5.67 1.5 1.5V4" stroke="currentColor" stroke-width="1.5"/><path d="M2 8h14" stroke="currentColor" stroke-width="1.5"/></svg>
+                            Organisation (QESeal)
+                        </button>
+                        <button class="match-type-btn" data-type="person" id="matchTypePerson">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="5" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 16c0-3.31 3.13-6 7-6s7 2.69 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Natürliche Person (QES)
+                        </button>
+                    </div>
+                    <div class="match-fields" id="matchFieldsOrg">
+                        <div class="match-field">
+                            <label for="orgName">Organisationsname *</label>
+                            <input type="text" id="orgName" placeholder="z.B. Muster GmbH">
+                        </div>
+                        <div class="match-field">
+                            <label for="orgCountry">Land (ISO-Code)</label>
+                            <input type="text" id="orgCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
+                        </div>
+                        <div class="match-field">
+                            <label for="orgId">Organisations-ID / Registrierungsnummer</label>
+                            <input type="text" id="orgId" placeholder="z.B. HRB 12345 oder VATDE-123456789">
+                        </div>
+                    </div>
+                    <div class="match-fields hidden" id="matchFieldsPerson">
+                        <div class="match-field">
+                            <label for="personGivenName">Vorname *</label>
+                            <input type="text" id="personGivenName" placeholder="z.B. Max">
+                        </div>
+                        <div class="match-field">
+                            <label for="personSurname">Nachname *</label>
+                            <input type="text" id="personSurname" placeholder="z.B. Mustermann">
+                        </div>
+                        <div class="match-field">
+                            <label for="personCountry">Land (ISO-Code)</label>
+                            <input type="text" id="personCountry" placeholder="z.B. DE, AT, CH" maxlength="2">
+                        </div>
+                        <div class="match-field">
+                            <label for="personSerialNumber">Seriennummer / ID</label>
+                            <input type="text" id="personSerialNumber" placeholder="z.B. PNODE-12345678">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Upload Card -->
             <div class="upload-card" id="uploadCard">
                 <div class="upload-zone" id="uploadZone">
@@ -154,6 +210,7 @@
             <div class="footer-content">
                 <p class="footer-text">Powered by <a href="https://sign8.eu" target="_blank" rel="noopener">SIGN8</a> &middot; Digitale Signaturen eIDAS-konform</p>
                 <p class="footer-disclaimer">Dokumente werden ausschließlich zur Validierung verarbeitet und nicht gespeichert.</p>
+                <p class="footer-disclaimer" style="margin-top:0.25rem">Validierung basiert auf <a href="https://github.com/esig/dss" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6)">EU DSS</a> (LGPL-2.1) &middot; <a href="https://github.com/Datenwunder089/Signature-DSS-Validation" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6)">Open Source (MIT)</a></p>
             </div>
         </div>
     </footer>

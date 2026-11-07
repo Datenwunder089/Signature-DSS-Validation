@@ -1,0 +1,23 @@
+THIRD-PARTY NOTICES
+
+This project uses the following third-party services and software:
+
+1. EU Digital Signature Services (DSS)
+   Copyright (C) European Commission
+   License: LGPL-2.1
+   https://github.com/esig/dss
+   https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Digital+Signature+Service+-++DSS
+   Note: DSS is accessed via the SIGN8 SVA API; no DSS code is
+   included in this repository.
+
+2. SIGN8 SVA (Signature Validation Authority) API
+   https://sign8.eu
+   Provides DSS-based document validation as a service.
+
+3. Inter Font
+   Copyright (C) Rasmus Andersson
+   License: SIL Open Font License 1.1
+   https://github.com/rsms/inter
+
+4. CORS Proxy (corsproxy.io)
+   Used for browser-based API requests during development/demo.

@@ -35,6 +35,35 @@
     const retryBtn = $('retryBtn');
 
     let selectedFile = null;
+    let matchMode = false;
+
+    // ── Mode Tabs ────────────────────────────────────────────
+
+    var modeTabs = document.getElementById('modeTabs');
+    var matchPanel = document.getElementById('matchPanel');
+    var matchFieldsOrg = document.getElementById('matchFieldsOrg');
+    var matchFieldsPerson = document.getElementById('matchFieldsPerson');
+    var matchTypeOrg = document.getElementById('matchTypeOrg');
+    var matchTypePerson = document.getElementById('matchTypePerson');
+
+    modeTabs.querySelectorAll('.mode-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            modeTabs.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            matchMode = tab.dataset.mode === 'match';
+            if (matchMode) { matchPanel.classList.remove('hidden'); }
+            else { matchPanel.classList.add('hidden'); }
+        });
+    });
+
+    matchTypeOrg.addEventListener('click', function() {
+        matchTypeOrg.classList.add('active'); matchTypePerson.classList.remove('active');
+        matchFieldsOrg.classList.remove('hidden'); matchFieldsPerson.classList.add('hidden');
+    });
+    matchTypePerson.addEventListener('click', function() {
+        matchTypePerson.classList.add('active'); matchTypeOrg.classList.remove('active');
+        matchFieldsPerson.classList.remove('hidden'); matchFieldsOrg.classList.add('hidden');
+    });
 
     // ── File Upload ──────────────────────────────────────────
 
@@ -116,11 +145,12 @@
         const simple = data.SimpleReport || data.simpleReport || data.simpleReportJaxb || data;
         const detailed = data.DetailedReport || data.detailedReport || data.detailedReportJaxb || null;
         const diag = data.DiagnosticData || data.diagnosticData || data.diagnosticDataJaxb || null;
-        console.log('DSS Response keys:', Object.keys(data));
-        console.log('SimpleReport:', simple);
-        console.log('DiagnosticData keys:', diag ? Object.keys(diag) : 'null');
 
         renderOverview(simple, detailed, diag);
+
+        if (matchMode) {
+            renderMatchResult(simple, diag);
+        }
     }
 
     function renderOverview(simple, detailed, diag) {
@@ -532,6 +562,196 @@
         overallStatus.insertAdjacentElement('afterend', warning);
     }
 
+    // ── Registration-Validation Matching ─────────────────────
+
+    function getMatchInput() {
+        var isOrg = matchTypeOrg.classList.contains('active');
+        if (isOrg) {
+            return {
+                type: 'org',
+                name: document.getElementById('orgName').value.trim(),
+                country: document.getElementById('orgCountry').value.trim().toUpperCase(),
+                orgId: document.getElementById('orgId').value.trim()
+            };
+        }
+        return {
+            type: 'person',
+            givenName: document.getElementById('personGivenName').value.trim(),
+            surname: document.getElementById('personSurname').value.trim(),
+            country: document.getElementById('personCountry').value.trim().toUpperCase(),
+            serialNumber: document.getElementById('personSerialNumber').value.trim()
+        };
+    }
+
+    function extractSubjectDN(diagCert) {
+        var subjectDNs = toArray(diagCert.SubjectDistinguishedName || diagCert.subjectDistinguishedName || []);
+        var parsed = {};
+        subjectDNs.forEach(function(dn) {
+            var val = typeof dn === 'object' ? (dn.value || dn.Value || '') : String(dn);
+            if (!val) return;
+            var parts = val.split(',');
+            parts.forEach(function(part) {
+                var kv = part.trim().split('=');
+                if (kv.length >= 2) {
+                    var key = kv[0].trim().toUpperCase();
+                    var value = kv.slice(1).join('=').trim();
+                    if (!parsed[key]) parsed[key] = value;
+                }
+            });
+            if (!parsed._raw) parsed._raw = val;
+        });
+        return parsed;
+    }
+
+    function findSignerCerts(simple, diag) {
+        var sigs = simple.signatureOrTimestampOrEvidenceRecord || simple.signatureOrTimestamp || simple.signatures || [];
+        var rawArray = Array.isArray(sigs) ? sigs : (sigs ? [sigs] : []);
+        var sigArray = rawArray.map(function(item) {
+            if (item && item.Signature) return Object.assign({}, item.Signature, { _type: 'signature' });
+            if (item && item.Timestamp) return Object.assign({}, item.Timestamp, { _type: 'timestamp' });
+            return item;
+        }).filter(Boolean);
+
+        var usedCerts = [];
+        if (diag) {
+            var uc = toArray(diag.UsedCertificates || diag.usedCertificates || diag.Certificate || []);
+            uc.forEach(function(c) {
+                toArray(c.Certificate || c.certificate || c).forEach(function(item) { usedCerts.push(item); });
+            });
+            if (!usedCerts.length) usedCerts = uc.slice();
+        }
+
+        var results = [];
+        sigArray.forEach(function(sig) {
+            if (sig._type === 'timestamp') return;
+            var chain = sig.CertificateChain || sig.certificateChain;
+            if (!chain) return;
+            var certs = toArray(chain.Certificate || chain.certificate || chain);
+            if (!certs.length) return;
+            var signerChainCert = certs[0];
+            var certId = signerChainCert.Id || signerChainCert.id || '';
+            var diagCert = usedCerts.find(function(c) { return (c.Id || c.id) === certId; });
+            var signedBy = sig.SignedBy || sig.signedBy || '';
+            var indication = sig.Indication || sig.indication || '';
+            results.push({
+                signedBy: signedBy,
+                indication: indication,
+                chainCert: signerChainCert,
+                diagCert: diagCert || null,
+                dn: diagCert ? extractSubjectDN(diagCert) : {}
+            });
+        });
+
+        return results;
+    }
+
+    function normalizeForMatch(s) {
+        return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function fuzzyMatch(expected, actual) {
+        if (!expected) return 'skip';
+        if (!actual) return 'fail';
+        var e = normalizeForMatch(expected);
+        var a = normalizeForMatch(actual);
+        if (a === e) return 'ok';
+        if (a.includes(e) || e.includes(a)) return 'ok';
+        return 'fail';
+    }
+
+    function performMatch(input, signerInfo) {
+        var dn = signerInfo.dn;
+        var rows = [];
+
+        if (input.type === 'org') {
+            var orgName = dn['O'] || dn['2.5.4.10'] || '';
+            rows.push({ label: 'Organisation', expected: input.name, found: orgName || signerInfo.signedBy, status: fuzzyMatch(input.name, orgName || signerInfo.signedBy) });
+            if (input.country) {
+                rows.push({ label: 'Land', expected: input.country, found: dn['C'] || '', status: fuzzyMatch(input.country, dn['C']) });
+            }
+            if (input.orgId) {
+                var foundId = dn['2.5.4.97'] || dn['ORGANIZATIONIDENTIFIER'] || dn['SERIALNUMBER'] || dn['OID.2.5.4.97'] || '';
+                rows.push({ label: 'Org-ID', expected: input.orgId, found: foundId, status: fuzzyMatch(input.orgId, foundId) });
+            }
+        } else {
+            var givenName = dn['GIVENNAME'] || dn['G'] || dn['2.5.4.42'] || '';
+            var surname = dn['SURNAME'] || dn['SN'] || dn['2.5.4.4'] || '';
+            var cn = dn['CN'] || '';
+            rows.push({ label: 'Vorname', expected: input.givenName, found: givenName || '', status: givenName ? fuzzyMatch(input.givenName, givenName) : fuzzyMatch(input.givenName, cn) });
+            rows.push({ label: 'Nachname', expected: input.surname, found: surname || '', status: surname ? fuzzyMatch(input.surname, surname) : fuzzyMatch(input.surname, cn) });
+            if (input.country) {
+                rows.push({ label: 'Land', expected: input.country, found: dn['C'] || '', status: fuzzyMatch(input.country, dn['C']) });
+            }
+            if (input.serialNumber) {
+                rows.push({ label: 'Seriennummer', expected: input.serialNumber, found: dn['SERIALNUMBER'] || dn['2.5.4.5'] || '', status: fuzzyMatch(input.serialNumber, dn['SERIALNUMBER'] || dn['2.5.4.5']) });
+            }
+        }
+
+        var checkedRows = rows.filter(function(r) { return r.status !== 'skip'; });
+        var okCount = checkedRows.filter(function(r) { return r.status === 'ok'; }).length;
+        var failCount = checkedRows.filter(function(r) { return r.status === 'fail'; }).length;
+
+        var overall;
+        if (failCount === 0 && okCount > 0) overall = 'success';
+        else if (okCount > 0 && failCount > 0) overall = 'partial';
+        else overall = 'failure';
+
+        return { overall: overall, rows: rows, okCount: okCount, failCount: failCount, totalChecked: checkedRows.length };
+    }
+
+    function renderMatchResult(simple, diag) {
+        var existing = document.getElementById('matchResultContainer');
+        if (existing) existing.remove();
+
+        var input = getMatchInput();
+        if (input.type === 'org' && !input.name) return;
+        if (input.type === 'person' && !input.givenName && !input.surname) return;
+
+        var signers = findSignerCerts(simple, diag);
+        if (!signers.length) {
+            var noSigDiv = el('div', 'match-result match-failure');
+            noSigDiv.id = 'matchResultContainer';
+            noSigDiv.innerHTML = '<div class="match-result-header">' + ICONS.invalid +
+                '<strong>Keine Signaturen zum Abgleich gefunden</strong></div>' +
+                '<p style="font-size:0.85rem;color:var(--color-text-secondary)">Das Dokument enthält keine qualifizierten Signaturen oder Siegel, die mit den Registrierungsdaten verglichen werden können.</p>';
+            signaturesList.insertAdjacentElement('beforebegin', noSigDiv);
+            return;
+        }
+
+        var container = el('div', '');
+        container.id = 'matchResultContainer';
+
+        signers.forEach(function(signer, idx) {
+            var result = performMatch(input, signer);
+            var labels = { success: 'Abgleich erfolgreich', partial: 'Teilweise übereinstimmend', failure: 'Abgleich fehlgeschlagen' };
+            var icons = { success: ICONS.valid, partial: ICONS.warning, failure: ICONS.invalid };
+
+            var div = el('div', 'match-result match-' + result.overall);
+            div.innerHTML = '<div class="match-result-header">' + icons[result.overall] +
+                '<strong>' + esc(labels[result.overall]) + (signers.length > 1 ? ' (' + esc(signer.signedBy) + ')' : '') + '</strong></div>' +
+                '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin-bottom:0.5rem">' +
+                    result.okCount + ' von ' + result.totalChecked + ' geprüften Feldern stimmen überein.' +
+                    (signer.dn._raw ? '<br><span style="font-size:0.75rem;opacity:0.7">Zertifikats-Subject: ' + esc(signer.dn._raw) + '</span>' : '') +
+                '</p>' +
+                '<div class="match-detail-rows">' +
+                    '<div class="match-row" style="font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-light)">' +
+                        '<span>Feld</span><span>Erwartet</span><span>Gefunden</span><span>Status</span></div>' +
+                    result.rows.map(function(r) {
+                        var statusText = { ok: 'OK', fail: 'Fehlt', skip: 'n/a' }[r.status];
+                        return '<div class="match-row">' +
+                            '<span class="match-row-label">' + esc(r.label) + '</span>' +
+                            '<span class="match-row-expected">' + esc(r.expected || '-') + '</span>' +
+                            '<span class="match-row-found">' + esc(r.found || '-') + '</span>' +
+                            '<span class="match-row-status ' + r.status + '">' + statusText + '</span></div>';
+                    }).join('') +
+                '</div>';
+
+            container.appendChild(div);
+        });
+
+        signaturesList.insertAdjacentElement('beforebegin', container);
+    }
+
     // ── Error / Navigation ───────────────────────────────────
 
     function showError(message) {
@@ -546,6 +766,8 @@
         selectedFile = null; fileInput.value = '';
         uploadZone.classList.remove('hidden'); fileSelected.classList.add('hidden');
         hide(errorCard, resultsCard, loadingCard); show(uploadCard);
+        var mc = document.getElementById('matchResultContainer');
+        if (mc) mc.remove();
     }
 
     // ── Helpers ──────────────────────────────────────────────

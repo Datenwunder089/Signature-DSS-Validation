@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGN8 Signature-DSS-Validation - Dokumentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #1E6568;
+            --color-primary-light: #2f9fa6;
+            --color-accent: #BBD135;
+            --color-sage: #80A07A;
+            --color-text: #222222;
+            --color-text-secondary: #555555;
+            --color-border: #e0e0e0;
+            --color-bg: #ffffff;
+            --color-code-bg: #f5f7f9;
+        }
+        @media print {
+            body { margin: 0; font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            .cover { height: 100vh; }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text);
+            line-height: 1.7;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 40px;
+            background: var(--color-bg);
+        }
+
+        /* Cover Page */
+        .cover {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 80vh;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, #1E6568 0%, #80A07A 50%, #BBD135 100%);
+            border-radius: 16px;
+            margin-bottom: 60px;
+            color: white;
+        }
+        .cover-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .cover h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        .cover h2 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .cover-meta {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        .cover-meta span {
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* Table of Contents */
+        .toc { margin-bottom: 60px; }
+        .toc h2 { font-size: 1.5rem; color: var(--color-primary); margin-bottom: 1.5rem; border-bottom: 3px solid var(--color-primary); padding-bottom: 0.5rem; }
+        .toc-list { list-style: none; }
+        .toc-list li { padding: 0.5rem 0; border-bottom: 1px dotted var(--color-border); }
+        .toc-list a { text-decoration: none; color: var(--color-text); font-weight: 500; }
+        .toc-list a:hover { color: var(--color-primary); }
+        .toc-list .toc-sub { padding-left: 1.5rem; font-size: 0.9rem; }
+
+        /* Content */
+        h2 { font-size: 1.4rem; color: var(--color-primary); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-accent); }
+        h3 { font-size: 1.1rem; color: var(--color-primary); margin: 1.5rem 0 0.75rem; }
+        h4 { font-size: 0.95rem; color: var(--color-text); margin: 1rem 0 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--color-text-secondary); }
+        ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--color-text-secondary); }
+        li { margin-bottom: 0.4rem; }
+        strong { color: var(--color-text); }
+
+        code {
+            background: var(--color-code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        pre {
+            background: var(--color-code-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        pre code { background: none; padding: 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        th, td { padding: 0.6rem 1rem; text-align: left; border: 1px solid var(--color-border); }
+        th { background: rgba(30, 101, 104, 0.06); color: var(--color-primary); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+        .info-box {
+            background: rgba(30, 101, 104, 0.05);
+            border-left: 4px solid var(--color-primary);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+        .info-box p { margin-bottom: 0; color: var(--color-text); }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+        .warning-box p { margin-bottom: 0; color: var(--color-text); }
+
+        .footer-doc {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--color-accent);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover">
+    <div class="cover-logo">&#10003;</div>
+    <h1>Signature-DSS-Validation</h1>
+    <h2>Dokumentation &amp; Benutzerhandbuch</h2>
+    <div class="cover-meta">
+        <span>Version 1.0</span>
+        <span>SIGN8 GmbH</span>
+        <span>November 2024</span>
+    </div>
+</div>
+
+<!-- Table of Contents -->
+<div class="toc page-break">
+    <h2>Inhaltsverzeichnis</h2>
+    <ol class="toc-list">
+        <li><a href="#intro">1. Einleitung</a></li>
+        <li><a href="#features">2. Funktionsumfang</a>
+            <ol class="toc-list">
+                <li class="toc-sub"><a href="#feat-validate">2.1 Signatur-Validierung</a></li>
+                <li class="toc-sub"><a href="#feat-match">2.2 Registrierungs-Abgleich</a></li>
+                <li class="toc-sub"><a href="#feat-drilldown">2.3 Detail-Analyse</a></li>
+            </ol>
+        </li>
+        <li><a href="#usage">3. Benutzung</a>
+            <ol class="toc-list">
+                <li class="toc-sub"><a href="#usage-validate">3.1 PDF validieren</a></li>
+                <li class="toc-sub"><a href="#usage-match">3.2 Registrierungsdaten abgleichen</a></li>
+            </ol>
+        </li>
+        <li><a href="#tech">4. Technische Architektur</a>
+            <ol class="toc-list">
+                <li class="toc-sub"><a href="#tech-api">4.1 API-Anbindung</a></li>
+                <li class="toc-sub"><a href="#tech-dss">4.2 EU DSS Format</a></li>
+                <li class="toc-sub"><a href="#tech-stack">4.3 Technologie-Stack</a></li>
+            </ol>
+        </li>
+        <li><a href="#workflow">5. Workflow: Registrierung &amp; Validierung</a></li>
+        <li><a href="#security">6. Sicherheit &amp; Datenschutz</a></li>
+        <li><a href="#license">7. Lizenzierung &amp; Open Source</a></li>
+        <li><a href="#glossary">8. Glossar</a></li>
+    </ol>
+</div>
+
+<!-- 1. Einleitung -->
+<div class="page-break">
+<h2 id="intro">1. Einleitung</h2>
+<p>Der <strong>Signature-DSS-Validation</strong> ist eine webbasierte Anwendung zur Validierung digitaler Signaturen und Siegel in PDF-Dokumenten. Die Anwendung nutzt die SIGN8 SVA (Signature Validation Authority) API, die auf dem EU Digital Signature Services (DSS) Framework basiert.</p>
+
+<div class="info-box">
+    <p><strong>Zielgruppe:</strong> Unternehmen, Behörden und Privatpersonen, die die Gültigkeit qualifizierter elektronischer Signaturen (QES) und qualifizierter elektronischer Siegel (QESeal) prüfen und mit Registrierungsdaten abgleichen möchten.</p>
+</div>
+
+<h3>Kernfunktionen</h3>
+<ul>
+    <li>Validierung digitaler Signaturen und Siegel gemäß eIDAS-Verordnung</li>
+    <li>Abgleich von Registrierungsdaten mit Zertifikatsinformationen</li>
+    <li>Detaillierte Analyse von Zertifikatsketten und Vertrauensankern</li>
+    <li>Unterstützung für QES (natürliche Personen) und QESeal (Organisationen)</li>
+    <li>Vollständige EU DSS SimpleReport, DetailedReport und DiagnosticData Auswertung</li>
+</ul>
+</div>
+
+<!-- 2. Funktionsumfang -->
+<h2 id="features" class="page-break">2. Funktionsumfang</h2>
+
+<h3 id="feat-validate">2.1 Signatur-Validierung</h3>
+<p>Der Validierungsmodus prüft alle digitalen Signaturen und Siegel eines PDF-Dokuments. Dabei werden folgende Aspekte geprüft:</p>
+
+<table>
+    <thead>
+        <tr><th>Prüfung</th><th>Beschreibung</th><th>DSS-Feld</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Signaturstatus</td><td>Gültigkeit der kryptographischen Signatur</td><td>Indication</td></tr>
+        <tr><td>Zertifikatskette</td><td>Vertrauenskette bis zur Root-CA</td><td>CertificateChain</td></tr>
+        <tr><td>Zeitstempel</td><td>Qualifizierte Zeitstempel</td><td>Timestamps</td></tr>
+        <tr><td>Signaturformat</td><td>PAdES-Konformität</td><td>SignatureFormat</td></tr>
+        <tr><td>Signaturlevel</td><td>Qualifizierungsstufe (QES, QESeal, AdES)</td><td>SignatureLevel</td></tr>
+        <tr><td>Validierungsrichtlinie</td><td>Verwendete EU-Validierungspolicy</td><td>ValidationPolicy</td></tr>
+    </tbody>
+</table>
+
+<h4>DSS Indication-Werte</h4>
+<table>
+    <thead><tr><th>Wert</th><th>Bedeutung</th><th>Anzeige</th></tr></thead>
+    <tbody>
+        <tr><td><code>TOTAL_PASSED</code></td><td>Signatur vollständig gültig</td><td>Grün: Gültig</td></tr>
+        <tr><td><code>INDETERMINATE</code></td><td>Gültigkeit nicht abschließend prüfbar</td><td>Blau: Unbestimmt</td></tr>
+        <tr><td><code>TOTAL_FAILED</code></td><td>Signatur ungültig</td><td>Rot: Ungültig</td></tr>
+    </tbody>
+</table>
+
+<h3 id="feat-match">2.2 Registrierungs-Abgleich</h3>
+<p>Der Registrierungs-Abgleich ermöglicht es, die Daten aus einer Registrierung (z.B. bei einer Zertifizierungsstelle) mit den tatsächlichen Zertifikatsinformationen auf dem signierten Dokument zu vergleichen.</p>
+
+<h4>Organisation (QESeal)</h4>
+<p>Für Organisationen werden folgende Felder aus dem Distinguished Name (DN) des Zertifikats geprüft:</p>
+<table>
+    <thead><tr><th>Eingabefeld</th><th>DN-Feld</th><th>OID</th></tr></thead>
+    <tbody>
+        <tr><td>Organisationsname</td><td>O (Organization)</td><td>2.5.4.10</td></tr>
+        <tr><td>Land</td><td>C (Country)</td><td>2.5.4.6</td></tr>
+        <tr><td>Organisations-ID</td><td>organizationIdentifier / SerialNumber</td><td>2.5.4.97 / 2.5.4.5</td></tr>
+    </tbody>
+</table>
+
+<h4>Natürliche Person (QES)</h4>
+<p>Für natürliche Personen werden folgende Felder geprüft:</p>
+<table>
+    <thead><tr><th>Eingabefeld</th><th>DN-Feld</th><th>OID</th></tr></thead>
+    <tbody>
+        <tr><td>Vorname</td><td>GivenName</td><td>2.5.4.42</td></tr>
+        <tr><td>Nachname</td><td>Surname</td><td>2.5.4.4</td></tr>
+        <tr><td>Land</td><td>C (Country)</td><td>2.5.4.6</td></tr>
+        <tr><td>Seriennummer</td><td>SerialNumber</td><td>2.5.4.5</td></tr>
+    </tbody>
+</table>
+
+<h3 id="feat-drilldown">2.3 Detail-Analyse (3-Level Drill-Down)</h3>
+<p>Die Ergebnisanzeige bietet drei Ebenen der Detailtiefe:</p>
+<ol>
+    <li><strong>Übersicht (Level 1):</strong> Gesamtstatus, Anzahl gültiger/ungültiger Signaturen, Validierungsrichtlinie</li>
+    <li><strong>Signatur-Details (Level 2):</strong> Pro Signatur: Status, Unterzeichner, Format, Level, Zeitpunkt, Signatur-ID</li>
+    <li><strong>Tiefe Details (Level 3):</strong> Akkordeon-Bereiche für Validierungs-Details, Qualifizierungs-Details, Zertifikatskette, Signatur-Umfang, Zeitstempel, Erweiterte Zertifikats-Details</li>
+</ol>
+
+<!-- 3. Benutzung -->
+<h2 id="usage" class="page-break">3. Benutzung</h2>
+
+<h3 id="usage-validate">3.1 PDF validieren</h3>
+<ol>
+    <li>Öffnen Sie die Anwendung im Browser</li>
+    <li>Stellen Sie sicher, dass der Tab <strong>"Signatur-Validierung"</strong> aktiv ist</li>
+    <li>Laden Sie ein PDF-Dokument hoch:
+        <ul>
+            <li>Per Drag &amp; Drop in den Upload-Bereich ziehen, oder</li>
+            <li>Auf "Datei auswählen" klicken</li>
+        </ul>
+    </li>
+    <li>Klicken Sie auf <strong>"Jetzt validieren"</strong></li>
+    <li>Die Ergebnisse werden angezeigt:
+        <ul>
+            <li>Gesamtstatus (gültig/ungültig/unbestimmt)</li>
+            <li>Warnhinweis bei fehlender Zertifikatskette</li>
+            <li>Liste aller Signaturen und Zeitstempel</li>
+        </ul>
+    </li>
+    <li>Klicken Sie auf eine Signatur, um Details zu sehen</li>
+    <li>Öffnen Sie die Akkordeon-Bereiche für tiefere Analyse</li>
+</ol>
+
+<h3 id="usage-match">3.2 Registrierungsdaten abgleichen</h3>
+<ol>
+    <li>Wechseln Sie zum Tab <strong>"Registrierungs-Abgleich"</strong></li>
+    <li>Wählen Sie den Typ:
+        <ul>
+            <li><strong>Organisation (QESeal)</strong> für Firmensignaturen/-siegel</li>
+            <li><strong>Natürliche Person (QES)</strong> für persönliche Signaturen</li>
+        </ul>
+    </li>
+    <li>Geben Sie die erwarteten Registrierungsdaten ein:
+        <ul>
+            <li>Pflichtfelder sind mit * markiert</li>
+            <li>Optionale Felder werden nur geprüft, wenn ausgefüllt</li>
+        </ul>
+    </li>
+    <li>Laden Sie das signierte/gesiegelte PDF-Dokument hoch</li>
+    <li>Klicken Sie auf <strong>"Jetzt validieren"</strong></li>
+    <li>Das Ergebnis zeigt:
+        <ul>
+            <li><strong style="color:#28a745">Abgleich erfolgreich</strong> - alle geprüften Felder stimmen überein</li>
+            <li><strong style="color:#f59e0b">Teilweise übereinstimmend</strong> - einige Felder stimmen nicht überein</li>
+            <li><strong style="color:#dc3545">Abgleich fehlgeschlagen</strong> - keine Übereinstimmung</li>
+        </ul>
+    </li>
+</ol>
+
+<div class="warning-box">
+    <p><strong>Hinweis:</strong> Der Abgleich verwendet einen unscharfen Vergleich (Fuzzy Matching). Kleinere Abweichungen in der Schreibweise (z.B. Groß-/Kleinschreibung) werden toleriert. Der Abgleich ersetzt keine rechtliche Prüfung.</p>
+</div>
+
+<!-- 4. Technische Architektur -->
+<h2 id="tech" class="page-break">4. Technische Architektur</h2>
+
+<h3 id="tech-api">4.1 API-Anbindung</h3>
+<p>Die Anwendung kommuniziert mit der SIGN8 SVA API:</p>
+<pre><code>Endpunkt: POST https://api.uat.sign8.eu/sva/v1/validation/document/raw
+
+Request Body:
+{
+    "document": "&lt;Base64-kodiertes PDF&gt;"
+}
+
+Response: DSS ValidationReport (JSON)
+    - SimpleReport
+    - DetailedReport
+    - DiagnosticData</code></pre>
+
+<div class="info-box">
+    <p>Die API-Kommunikation erfolgt über einen CORS-Proxy (corsproxy.io), da die API nicht direkt aus dem Browser angesprochen werden kann. Für Produktivumgebungen sollte ein eigener Backend-Proxy eingesetzt werden.</p>
+</div>
+
+<h3 id="tech-dss">4.2 EU DSS Format</h3>
+<p>Die API gibt Daten im standardisierten EU DSS Format zurück. Die wichtigsten Strukturen:</p>
+
+<h4>SimpleReport</h4>
+<p>Enthält die zusammengefassten Validierungsergebnisse mit dem Array <code>signatureOrTimestampOrEvidenceRecord</code>. Jedes Element ist in einem Wrapper-Objekt (<code>{Signature: {...}}</code> oder <code>{Timestamp: {...}}</code>) gekapselt.</p>
+
+<h4>DiagnosticData</h4>
+<p>Enthält detaillierte Zertifikatsinformationen unter <code>UsedCertificates</code> mit Subject Distinguished Name, Issuer, Gültigkeitszeitraum, Key Usage und weiteren Feldern.</p>
+
+<h3 id="tech-stack">4.3 Technologie-Stack</h3>
+<table>
+    <thead><tr><th>Komponente</th><th>Technologie</th></tr></thead>
+    <tbody>
+        <tr><td>Frontend</td><td>Vanilla JavaScript (ES5+), HTML5, CSS3</td></tr>
+        <tr><td>Schriftart</td><td>Inter (Google Fonts)</td></tr>
+        <tr><td>API</td><td>SIGN8 SVA / EU DSS</td></tr>
+        <tr><td>Hosting</td><td>GitHub Pages</td></tr>
+        <tr><td>Build</td><td>Kein Build-Schritt erforderlich (statische Dateien)</td></tr>
+    </tbody>
+</table>
+
+<!-- 5. Workflow -->
+<h2 id="workflow" class="page-break">5. Workflow: Registrierung &amp; Validierung</h2>
+<p>Der typische Ablauf für die Überprüfung einer qualifiziert signierten/gesiegelten Registrierung:</p>
+
+<h3>Organisationen (QESeal)</h3>
+<ol>
+    <li><strong>Registrierung:</strong> Die Organisation registriert sich bei der zuständigen Stelle (z.B. Handelsregister, Aufsichtsbehörde) und erhält Registrierungsdaten (Firmenname, Registrierungsnummer, Land)</li>
+    <li><strong>Qualifiziertes Siegel:</strong> Die Organisation lädt den Antrag/das Dokument herunter und versieht es mit einem qualifizierten elektronischen Siegel (QESeal) über einen qualifizierten Vertrauensdiensteanbieter (QTSP)</li>
+    <li><strong>Validierung &amp; Abgleich:</strong> Die empfangende Stelle nutzt den Signature-DSS-Validator:
+        <ul>
+            <li>Wechsel auf "Registrierungs-Abgleich"</li>
+            <li>Eingabe der Registrierungsdaten</li>
+            <li>Upload des gesiegelten PDF</li>
+            <li>Automatischer Abgleich der Zertifikats-Subject-Daten mit den Registrierungsdaten</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Natürliche Personen (QES)</h3>
+<ol>
+    <li><strong>Identifizierung:</strong> Die natürliche Person identifiziert sich bei einem qualifizierten Vertrauensdiensteanbieter (z.B. per VideoIdent)</li>
+    <li><strong>Qualifizierte Signatur:</strong> Die Person signiert das Dokument mit ihrer qualifizierten elektronischen Signatur (QES)</li>
+    <li><strong>Validierung &amp; Abgleich:</strong> Die empfangende Stelle prüft:
+        <ul>
+            <li>Wechsel auf "Registrierungs-Abgleich" → "Natürliche Person (QES)"</li>
+            <li>Eingabe von Vorname, Nachname (und ggf. Land, Seriennummer)</li>
+            <li>Upload des signierten PDF</li>
+            <li>Automatischer Abgleich mit den Zertifikats-Subject-Daten (GivenName, Surname, Country)</li>
+        </ul>
+    </li>
+</ol>
+
+<div class="info-box">
+    <p><strong>Wichtig:</strong> Die Validierung prüft sowohl die kryptographische Gültigkeit der Signatur als auch die Übereinstimmung der Identitätsdaten. Beide Prüfungen müssen bestanden sein, um die Authentizität sicherzustellen.</p>
+</div>
+
+<!-- 6. Sicherheit -->
+<h2 id="security" class="page-break">6. Sicherheit &amp; Datenschutz</h2>
+
+<h3>Datenverarbeitung</h3>
+<ul>
+    <li>PDF-Dokumente werden ausschließlich zur Validierung an die SIGN8 SVA API übertragen</li>
+    <li>Es werden keine Dokumente gespeichert (weder lokal noch serverseitig)</li>
+    <li>Registrierungsdaten werden nur im Browser verarbeitet und nicht übertragen</li>
+    <li>Der Abgleich erfolgt vollständig clientseitig im Browser</li>
+</ul>
+
+<h3>Empfehlungen für den Produktivbetrieb</h3>
+<ul>
+    <li>Ersetzen Sie den CORS-Proxy durch einen eigenen Backend-Proxy</li>
+    <li>Implementieren Sie Rate-Limiting für API-Aufrufe</li>
+    <li>Verwenden Sie HTTPS für alle Verbindungen</li>
+    <li>Erwägen Sie eine Authentifizierung für den Zugriff auf die Anwendung</li>
+</ul>
+
+<!-- 7. Lizenzierung -->
+<h2 id="license" class="page-break">7. Lizenzierung &amp; Open Source</h2>
+
+<h3>Projektlizenz</h3>
+<p>Dieses Projekt steht unter der <strong>MIT-Lizenz</strong>. Es kann frei verwendet, modifiziert und verbreitet werden.</p>
+
+<h3>EU DSS Kompatibilität</h3>
+<p>Das EU Digital Signature Services (DSS) Framework wird unter der <strong>LGPL-2.1</strong>-Lizenz bereitgestellt. Da dieses Projekt:</p>
+<ul>
+    <li>Keinen DSS-Quellcode enthält oder bündelt</li>
+    <li>DSS ausschließlich über die SIGN8 SVA API als Service nutzt</li>
+    <li>Nur die standardisierten JSON-Antwortformate verarbeitet</li>
+</ul>
+<p>... bestehen <strong>keine LGPL-Lizenzverpflichtungen</strong> für dieses Projekt. Die LGPL-Pflichten treffen auf den Serverbetreiber zu, der DSS ausführt (in diesem Fall die SIGN8 SVA-Infrastruktur).</p>
+
+<h3>Verwendete Drittkomponenten</h3>
+<table>
+    <thead><tr><th>Komponente</th><th>Lizenz</th><th>Nutzung</th></tr></thead>
+    <tbody>
+        <tr><td>EU DSS</td><td>LGPL-2.1</td><td>Serverseitig via SIGN8 SVA API</td></tr>
+        <tr><td>Inter Font</td><td>SIL OFL 1.1</td><td>Schriftart (Google Fonts)</td></tr>
+        <tr><td>CORS Proxy</td><td>-</td><td>API-Proxy (nur Demo/Entwicklung)</td></tr>
+    </tbody>
+</table>
+
+<div class="info-box">
+    <p>Die vollständigen Lizenzhinweise finden Sie in den Dateien <code>LICENSE</code> und <code>THIRD-PARTY-NOTICES</code> im Projektverzeichnis.</p>
+</div>
+
+<!-- 8. Glossar -->
+<h2 id="glossary" class="page-break">8. Glossar</h2>
+<table>
+    <thead><tr><th>Begriff</th><th>Erklärung</th></tr></thead>
+    <tbody>
+        <tr><td><strong>DSS</strong></td><td>Digital Signature Services - EU-Framework zur Signaturvalidierung</td></tr>
+        <tr><td><strong>eIDAS</strong></td><td>EU-Verordnung über elektronische Identifizierung und Vertrauensdienste</td></tr>
+        <tr><td><strong>QES</strong></td><td>Qualifizierte Elektronische Signatur - höchste Stufe der elektronischen Signatur, rechtlich gleichgestellt mit handschriftlicher Unterschrift</td></tr>
+        <tr><td><strong>QESeal</strong></td><td>Qualifiziertes Elektronisches Siegel - Siegel einer juristischen Person/Organisation</td></tr>
+        <tr><td><strong>PAdES</strong></td><td>PDF Advanced Electronic Signatures - Signaturformat für PDF-Dokumente</td></tr>
+        <tr><td><strong>SVA</strong></td><td>Signature Validation Authority - Dienst zur Signaturvalidierung</td></tr>
+        <tr><td><strong>QTSP</strong></td><td>Qualified Trust Service Provider - Qualifizierter Vertrauensdiensteanbieter</td></tr>
+        <tr><td><strong>DN</strong></td><td>Distinguished Name - Strukturierte Identifikation in X.509-Zertifikaten</td></tr>
+        <tr><td><strong>CA</strong></td><td>Certificate Authority - Zertifizierungsstelle</td></tr>
+        <tr><td><strong>CORS</strong></td><td>Cross-Origin Resource Sharing - Browser-Sicherheitsmechanismus</td></tr>
+    </tbody>
+</table>
+
+<!-- Footer -->
+<div class="footer-doc">
+    <p>&copy; 2024 SIGN8 GmbH &middot; <a href="https://sign8.eu" style="color:var(--color-primary)">sign8.eu</a></p>
+    <p style="margin-top:4px">Signature-DSS-Validation v1.0 &middot; Open Source (MIT-Lizenz)</p>
+    <p style="margin-top:4px;font-size:0.7rem;opacity:0.6">Validierung basiert auf EU Digital Signature Services (DSS) &middot; LGPL-2.1</p>
+</div>
+
+</body>
+</html>
