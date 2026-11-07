@@ -7,9 +7,11 @@
 (function () {
     'use strict';
 
-    const API_URL = 'https://api.uat.sign8.eu/sva/v1/validation/document/raw';
+    const SVA_API_URL = 'https://api.uat.sign8.eu/sva/v1/validation/document/raw';
     const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const LOCAL_API = '/api/v1/validate';
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    var useLocalApi = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     // DOM
     const $ = id => document.getElementById(id);
@@ -107,7 +109,8 @@
         show(loadingCard); hide(uploadCard, resultsCard, errorCard);
         try {
             const base64 = await fileToBase64(selectedFile);
-            const resp = await fetch(CORS_PROXY + encodeURIComponent(API_URL), {
+            const apiUrl = useLocalApi ? LOCAL_API : CORS_PROXY + encodeURIComponent(SVA_API_URL);
+            const resp = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ document: base64 })

@@ -1,0 +1,26 @@
+{
+  "name": "signature-dss-validation",
+  "version": "1.0.0",
+  "description": "PDF-Signatur-Validierung und Registrierungs-Abgleich via SIGN8 SVA / EU DSS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Datenwunder089/Signature-DSS-Validation.git"
+  },
+  "keywords": ["signature", "validation", "dss", "eidas", "qes", "pdf"],
+  "author": "SIGN8 GmbH",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Datenwunder089/Signature-DSS-Validation/issues"
+  },
+  "homepage": "https://github.com/Datenwunder089/Signature-DSS-Validation#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

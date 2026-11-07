@@ -1,0 +1,545 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SIGN8 Signature-DSS-Validation API",
+    "description": "REST API zur Validierung digitaler Signaturen und Siegel in PDF-Dokumenten sowie zum Abgleich von Registrierungsdaten mit Zertifikatsinformationen.\n\n## Funktionen\n- **Validierung**: PDF-Dokument gegen die SIGN8 SVA API (EU DSS) validieren\n- **Registrierungs-Abgleich**: Zertifikats-Subject-Daten mit erwarteten Registrierungsdaten vergleichen\n- Unterstützung für QES (natürliche Personen) und QESeal (Organisationen)\n\n## Authentifizierung\nDie API ist aktuell ohne Authentifizierung zugänglich (Demo/UAT-Umgebung).\n\n## Lizenz\nDieses Projekt steht unter der MIT-Lizenz. Die Validierung basiert auf EU DSS (LGPL-2.1), das serverseitig via SIGN8 SVA API genutzt wird.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SIGN8 GmbH",
+      "url": "https://sign8.eu"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/Datenwunder089/Signature-DSS-Validation/blob/master/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Lokaler Entwicklungsserver"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Validierung",
+      "description": "PDF-Signatur-Validierung via SIGN8 SVA / EU DSS"
+    },
+    {
+      "name": "Registrierungs-Abgleich",
+      "description": "Abgleich von Registrierungsdaten mit Zertifikats-Subject-Daten"
+    },
+    {
+      "name": "System",
+      "description": "System- und Health-Endpunkte"
+    }
+  ],
+  "paths": {
+    "/api/v1/validate": {
+      "post": {
+        "tags": ["Validierung"],
+        "summary": "PDF-Dokument validieren",
+        "description": "Validiert alle digitalen Signaturen und Siegel eines PDF-Dokuments über die SIGN8 SVA API (EU DSS). Gibt das vollständige DSS-Validierungsergebnis zurück (SimpleReport, DetailedReport, DiagnosticData).",
+        "operationId": "validateDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              },
+              "example": {
+                "document": "JVBERi0xLjQgbWluaW1hbCB0ZXN0..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validierung erfolgreich",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Anfrage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "SVA API nicht erreichbar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/validate/summary": {
+      "post": {
+        "tags": ["Validierung"],
+        "summary": "PDF-Dokument validieren (Zusammenfassung)",
+        "description": "Validiert ein PDF-Dokument und gibt eine vereinfachte Zusammenfassung zurück (Status, Anzahl Signaturen, Signaturdetails).",
+        "operationId": "validateDocumentSummary",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validierungszusammenfassung",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Anfrage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/match/organization": {
+      "post": {
+        "tags": ["Registrierungs-Abgleich"],
+        "summary": "Organisations-Registrierung abgleichen (QESeal)",
+        "description": "Validiert ein PDF-Dokument und vergleicht die Zertifikats-Subject-Daten der qualifizierten Siegel mit den erwarteten Organisationsdaten aus einer Registrierung.\n\nGeprüfte Felder:\n- **O** (Organization): Organisationsname\n- **C** (Country): Länderkennzeichen\n- **2.5.4.97** (organizationIdentifier): Organisations-ID / Registrierungsnummer",
+        "operationId": "matchOrganization",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchOrgRequest"
+              },
+              "example": {
+                "document": "JVBERi0xLjQgbWluaW1hbCB0ZXN0...",
+                "organization": {
+                  "name": "SIGN8 GmbH",
+                  "country": "DE",
+                  "organizationId": "VATDE-123456789"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Abgleich-Ergebnis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Anfrage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/match/person": {
+      "post": {
+        "tags": ["Registrierungs-Abgleich"],
+        "summary": "Personen-Registrierung abgleichen (QES)",
+        "description": "Validiert ein PDF-Dokument und vergleicht die Zertifikats-Subject-Daten der qualifizierten elektronischen Signatur mit den erwarteten Personendaten.\n\nGeprüfte Felder:\n- **GIVENNAME** (2.5.4.42): Vorname\n- **SURNAME** (2.5.4.4): Nachname\n- **C** (Country): Länderkennzeichen\n- **SERIALNUMBER** (2.5.4.5): Persönliche Seriennummer",
+        "operationId": "matchPerson",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchPersonRequest"
+              },
+              "example": {
+                "document": "JVBERi0xLjQgbWluaW1hbCB0ZXN0...",
+                "person": {
+                  "givenName": "Max",
+                  "surname": "Mustermann",
+                  "country": "DE",
+                  "serialNumber": "PNODE-12345678"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Abgleich-Ergebnis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Anfrage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "description": "Gibt den Status der API und die Erreichbarkeit der SIGN8 SVA API zurück.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "API ist betriebsbereit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ValidateRequest": {
+        "type": "object",
+        "required": ["document"],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Base64-kodiertes PDF-Dokument",
+            "example": "JVBERi0xLjQgbWluaW1hbCB0ZXN0..."
+          }
+        }
+      },
+      "ValidateResponse": {
+        "type": "object",
+        "properties": {
+          "SimpleReport": {
+            "type": "object",
+            "description": "DSS SimpleReport mit Validierungsergebnis"
+          },
+          "DetailedReport": {
+            "type": "object",
+            "description": "DSS DetailedReport mit detaillierter Prüfung"
+          },
+          "DiagnosticData": {
+            "type": "object",
+            "description": "DSS DiagnosticData mit Zertifikats- und Signaturdetails"
+          }
+        }
+      },
+      "ValidationSummary": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["valid", "invalid", "indeterminate", "no_signatures"],
+            "description": "Gesamtstatus der Validierung"
+          },
+          "signaturesCount": {
+            "type": "integer",
+            "description": "Anzahl der gefundenen Signaturen"
+          },
+          "validSignaturesCount": {
+            "type": "integer",
+            "description": "Anzahl der gültigen Signaturen"
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignatureSummary"
+            }
+          }
+        }
+      },
+      "SignatureSummary": {
+        "type": "object",
+        "properties": {
+          "signedBy": {
+            "type": "string",
+            "description": "Name des Unterzeichners"
+          },
+          "indication": {
+            "type": "string",
+            "enum": ["TOTAL_PASSED", "INDETERMINATE", "TOTAL_FAILED"],
+            "description": "DSS Indication"
+          },
+          "subIndication": {
+            "type": "string",
+            "description": "DSS SubIndication (falls vorhanden)"
+          },
+          "signatureFormat": {
+            "type": "string",
+            "description": "Signaturformat (z.B. PAdES-BASELINE-B)"
+          },
+          "signatureLevel": {
+            "type": "string",
+            "description": "Signaturlevel (z.B. QES, QESeal)"
+          },
+          "signingTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Zeitpunkt der Signatur"
+          },
+          "certificateSubject": {
+            "type": "string",
+            "description": "Subject DN des Signaturzertifikats"
+          }
+        }
+      },
+      "MatchOrgRequest": {
+        "type": "object",
+        "required": ["document", "organization"],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Base64-kodiertes PDF-Dokument"
+          },
+          "organization": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Erwarteter Organisationsname",
+                "example": "SIGN8 GmbH"
+              },
+              "country": {
+                "type": "string",
+                "description": "Erwarteter ISO-Ländercode (2 Zeichen)",
+                "example": "DE",
+                "maxLength": 2
+              },
+              "organizationId": {
+                "type": "string",
+                "description": "Erwartete Organisations-ID / Registrierungsnummer (z.B. VATDE-..., HRB ...)",
+                "example": "VATDE-123456789"
+              }
+            }
+          }
+        }
+      },
+      "MatchPersonRequest": {
+        "type": "object",
+        "required": ["document", "person"],
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Base64-kodiertes PDF-Dokument"
+          },
+          "person": {
+            "type": "object",
+            "required": ["givenName", "surname"],
+            "properties": {
+              "givenName": {
+                "type": "string",
+                "description": "Erwarteter Vorname",
+                "example": "Max"
+              },
+              "surname": {
+                "type": "string",
+                "description": "Erwarteter Nachname",
+                "example": "Mustermann"
+              },
+              "country": {
+                "type": "string",
+                "description": "Erwarteter ISO-Ländercode",
+                "example": "DE",
+                "maxLength": 2
+              },
+              "serialNumber": {
+                "type": "string",
+                "description": "Erwartete Seriennummer / persönliche ID",
+                "example": "PNODE-12345678"
+              }
+            }
+          }
+        }
+      },
+      "MatchResponse": {
+        "type": "object",
+        "properties": {
+          "overall": {
+            "type": "string",
+            "enum": ["match", "partial", "no_match", "no_signatures"],
+            "description": "Gesamtergebnis des Abgleichs"
+          },
+          "message": {
+            "type": "string",
+            "description": "Lesbare Beschreibung des Ergebnisses"
+          },
+          "registrationType": {
+            "type": "string",
+            "enum": ["org", "person"],
+            "description": "Art der Registrierung"
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignatureMatchResult"
+            }
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationSummary",
+            "description": "Validierungszusammenfassung"
+          }
+        }
+      },
+      "SignatureMatchResult": {
+        "type": "object",
+        "properties": {
+          "signedBy": {
+            "type": "string"
+          },
+          "indication": {
+            "type": "string"
+          },
+          "subIndication": {
+            "type": "string"
+          },
+          "signatureFormat": {
+            "type": "string"
+          },
+          "signingTime": {
+            "type": "string"
+          },
+          "certificateSubject": {
+            "type": "string",
+            "description": "Subject DN des Zertifikats"
+          },
+          "match": {
+            "type": "object",
+            "properties": {
+              "overall": {
+                "type": "string",
+                "enum": ["match", "partial", "no_match"]
+              },
+              "matchedFields": {
+                "type": "integer"
+              },
+              "failedFields": {
+                "type": "integer"
+              },
+              "totalChecked": {
+                "type": "integer"
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FieldMatch"
+                }
+              }
+            }
+          }
+        }
+      },
+      "FieldMatch": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Feldname"
+          },
+          "label": {
+            "type": "string",
+            "description": "Lesbare Bezeichnung"
+          },
+          "expected": {
+            "type": "string",
+            "description": "Erwarteter Wert aus der Registrierung"
+          },
+          "found": {
+            "type": "string",
+            "description": "Gefundener Wert im Zertifikat"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ok", "fail", "skip"],
+            "description": "Abgleich-Status: ok=übereinstimmend, fail=abweichend, skip=nicht geprüft"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.0.0"
+          },
+          "svaApi": {
+            "type": "string",
+            "description": "Status der SIGN8 SVA API"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Fehlerbeschreibung"
+          },
+          "code": {
+            "type": "string",
+            "description": "Fehlercode"
+          }
+        }
+      }
+    }
+  }
+}
