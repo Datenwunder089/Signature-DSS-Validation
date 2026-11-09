@@ -14,10 +14,14 @@ This project uses the following third-party services and software:
    https://sign8.eu
    Provides DSS-based document validation as a service.
 
-3. Inter Font
-   Copyright (C) Rasmus Andersson
+3. Roboto Font
+   Copyright (C) The Roboto Project Authors
    License: SIL Open Font License 1.1
-   https://github.com/rsms/inter
+   https://github.com/googlefonts/roboto-3-classic
 
-4. CORS Proxy (corsproxy.io)
-   Used for browser-based API requests during development/demo.
+4. Plus Jakarta Sans Font
+   Copyright (C) The Plus Jakarta Sans Project Authors
+   License: SIL Open Font License 1.1
+   https://github.com/tokotype/PlusJakartaSans
+
+   Both fonts are loaded from Google Fonts (fonts.googleapis.com).

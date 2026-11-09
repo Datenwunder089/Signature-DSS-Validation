@@ -358,7 +358,7 @@ Response: DSS ValidationReport (JSON)
     - DiagnosticData</code></pre>
 
 <div class="info-box">
-    <p>Die API-Kommunikation erfolgt über einen CORS-Proxy (corsproxy.io), da die API nicht direkt aus dem Browser angesprochen werden kann. Für Produktivumgebungen sollte ein eigener Backend-Proxy eingesetzt werden.</p>
+    <p>Wird die Anwendung über den mitgelieferten Server (<code>npm start</code>) betrieben, leitet dieser die Anfragen serverseitig an die SVA API weiter. Bei rein statischem Hosting (z.B. GitHub Pages) ruft der Browser die SVA API direkt auf; dafür muss die API CORS für die jeweilige Domain erlauben.</p>
 </div>
 
 <h3 id="tech-dss">4.2 EU DSS Format</h3>
@@ -431,7 +431,7 @@ Response: DSS ValidationReport (JSON)
 
 <h3>Empfehlungen für den Produktivbetrieb</h3>
 <ul>
-    <li>Ersetzen Sie den CORS-Proxy durch einen eigenen Backend-Proxy</li>
+    <li>Betreiben Sie die Anwendung über den mitgelieferten Server oder erlauben Sie CORS auf der SVA API nur für die eigene Domain</li>
     <li>Implementieren Sie Rate-Limiting für API-Aufrufe</li>
     <li>Verwenden Sie HTTPS für alle Verbindungen</li>
     <li>Erwägen Sie eine Authentifizierung für den Zugriff auf die Anwendung</li>
@@ -457,8 +457,7 @@ Response: DSS ValidationReport (JSON)
     <thead><tr><th>Komponente</th><th>Lizenz</th><th>Nutzung</th></tr></thead>
     <tbody>
         <tr><td>EU DSS</td><td>LGPL-2.1</td><td>Serverseitig via SIGN8 SVA API</td></tr>
-        <tr><td>Inter Font</td><td>SIL OFL 1.1</td><td>Schriftart (Google Fonts)</td></tr>
-        <tr><td>CORS Proxy</td><td>-</td><td>API-Proxy (nur Demo/Entwicklung)</td></tr>
+        <tr><td>Roboto, Plus Jakarta Sans</td><td>SIL OFL 1.1</td><td>Schriftarten (Google Fonts)</td></tr>
     </tbody>
 </table>
 

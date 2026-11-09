@@ -8,10 +8,10 @@
     'use strict';
 
     const SVA_API_URL = 'https://api.uat.sign8.eu/sva/v1/validation/document/raw';
-    const CORS_PROXY = 'https://corsproxy.io/?url=';
     const LOCAL_API = '/api/v1/validate';
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
-    var useLocalApi = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // Served by server.js: use its same-origin proxy. Static hosting (GitHub Pages, file://): call the SVA API directly, which needs CORS enabled there.
+    var useLocalApi = /^https?:$/.test(window.location.protocol) && !/\.github\.io$/i.test(window.location.hostname);
 
     // DOM
     const $ = id => document.getElementById(id);
@@ -110,12 +110,18 @@
         show(loadingCard); hide(uploadCard, resultsCard, errorCard);
         try {
             const base64 = await fileToBase64(selectedFile);
-            const apiUrl = useLocalApi ? LOCAL_API : CORS_PROXY + encodeURIComponent(SVA_API_URL);
-            const resp = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ document: base64 })
-            });
+            const apiUrl = useLocalApi ? LOCAL_API : SVA_API_URL;
+            let resp;
+            try {
+                resp = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ document: base64 })
+                });
+            } catch (networkErr) {
+                // fetch only rejects on network/CORS failures ("Failed to fetch" / Safari "Load failed")
+                throw new Error('Die Validierungs-API ist von dieser Seite aus nicht erreichbar. Entweder ist der Dienst gerade nicht verfügbar oder er erlaubt keine direkten Anfragen aus dem Browser (CORS). Bitte versuchen Sie es später erneut.');
+            }
             if (!resp.ok) {
                 let msg = 'HTTP ' + resp.status;
                 try { const b = await resp.json(); msg = b.message || b.error || msg; } catch {}
